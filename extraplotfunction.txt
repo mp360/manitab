@@ -1,0 +1,271 @@
+    def plotWeibull(self, canvas):
+        global writeCsv_lock
+        global xAreaPoints
+        global yAreaPoints
+        global globalBins
+        global globalNPerBin
+        global dataFile
+        global a
+        global a2
+        global binType
+        global curHeader
+        global globalBinning
+        global graphTitle
+        global sLeft
+        global sRight
+        global axLeft
+        global axRight
+        global axcolor
+        global fillBetFigure
+        global fillAxis
+        global totalArea
+        global globalSigVar
+        global globalTitleVar
+        global leftDeviations
+        global rightDeviations
+        global globalSigma
+        global globalMu
+        global wasPlotted
+        global userSetCursor
+        global sessionDict
+        global cursor 
+        global globalMultiplier
+        global logBase
+
+        try:
+            numBins = globalBinning.get()
+            gotten = curHeader.get()
+            if dataFile is not None:
+                dframe = pd.read_csv(dataFile)
+                dframe = dframe.sort_values(gotten)
+
+                a3 = None
+                if (self.myType.get() == "Date (mm/dd/yyyy)"):
+                    allAxes = fig.get_axes()
+                    for ax in allAxes:
+                        if ax != axLeft and ax != axRight:
+                            ax.clear()
+                            ax.remove()
+
+                    print(a)
+                    a = fig.add_subplot(111)
+                    a2 = a.twinx()
+
+                    l = dframe[gotten].dropna().values.tolist()
+
+                    converted_dates = map(datetime.datetime.strptime, l, len(l)*['%m/%d/%Y'])
+                    x_axis = (converted_dates)
+                    formatter = dates.DateFormatter('%m/%d/%Y')
+
+                    dframe[gotten] = pd.to_datetime(dframe[gotten].dropna())
+                    stats = dframe[gotten].dropna().describe()
+                    earliestMax = stats.iloc[4]
+                    recentMax = stats.iloc[5]
+
+                    dateDiffList = []
+                    for xDate in converted_dates:
+                        # print(abs((xDate - earliestMax).days))
+                        dateDiffList += [abs((xDate - earliestMax).days)]
+
+                    datesDF = pd.DataFrame(dateDiffList, columns = [gotten])
+                    # print(datesDF.head())
+                    stats = datesDF.describe()
+                    print(stats)
+
+                    mu = stats.iloc[1][gotten]
+                    variance = stats.iloc[2][gotten] ** 2
+                    sigma = math.sqrt(variance)
+                    mn = stats.iloc[3][gotten]
+                    mx = stats.iloc[7][gotten]
+
+                    globalMax = mx
+                    globalMin = mn
+                    globalSigma = sigma
+                    globalMu = mu
+                    globalSigVar.set(u"\u03c3 = " + str(truncate(sigma, 3)) + "\n" + u"\u03bc = " + str(truncate(mu, 3)) +"\nmin = " + str(mn) +  "\nmax = " + str(mx) )
+
+                    x = np.linspace(mn, mx, 300 + 5 * int(math.sqrt(mx - mn)))
+
+                    n, bins, patches = a.hist(dframe[gotten].dropna(), numBins,
+                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid')
+                    a.set_ylim(0, 1.5 * (max(n)))
+
+                    globalBins = dates.num2date(bins)
+                    globalNPerBin = n
+
+                    a.tick_params(axis = 'x', rotation = 25)
+
+                    a3 = fig.add_subplot(111, label="Weibull PDF", frame_on=False)
+                    cursor = InformativeCursor(a3, useblit=True, color='red', linewidth=.5)
+
+                    p0, p1, p2=ss.weibull_min.fit(datesDF[gotten].dropna().tolist(), floc=0)
+                    y = ss.weibull_min.pdf(x, p0, p1, p2)
+                    a3.plot(x, y, label = 'newNorm', lw = 1.0, color = '#8B0000')
+                    print(a3.get_label())
+
+                    # a3.plot(x, weib(x, p0, p1), label='self-defined weibull')
+
+                    xAreaPoints = x
+                    yAreaPoints = y
+                    fillAxis = a3
+                    fillBetFigure = a3.fill_between(x, 0, y, facecolor = '#4B0082', alpha = 0)
+                   
+                    sLeft.valmax = max(x)
+                    sRight.valmax = max(x)
+                    axLeft.set_xlim(min(x), max(x))
+                    axRight.set_xlim(min(x), max(x))
+
+                    a3.grid(False)
+                    a3.set_ylim(0, 1.5 * (max(y)))
+                    # a3.set_xlim(min(x), (max(x)))#tocomment
+
+                    a3.tick_params(axis = 'y', labelcolor = '#8B0000')
+                    a3.tick_params(axis = 'x', labelcolor = '#8B0000')
+                    a3.set_ylabel("Distribution Values")
+                    a3.set_xlabel("Days")
+                    a.set_xlabel( str(gotten))
+                    a.set_ylabel("Frequency")
+                    a3.xaxis.set_label_position('top')
+                    a3.yaxis.set_label_position('right')
+                    a2.set_yticks([])
+                    a3.xaxis.tick_top()
+                    a3.yaxis.tick_right()
+
+                    a.legend(bbox_to_anchor=(0, 1.08, 1, .102), loc=3,
+                            ncol=1, borderaxespad=0)
+
+                    totalArea = trapz(y, x)
+                    
+                    graphTitle.set('Weibull PDF of ' + str(gotten))
+                    cancan.thisFigure.suptitle(graphTitle.get(), fontsize=14, fontweight='bold')
+                    
+                    xAreaPoints = x
+                    yAreaPoints = y
+                    canvas.draw()
+
+                else: 
+                    allAxes = fig.get_axes()
+                    for ax in allAxes:
+                        if ax != axLeft and ax != axRight:
+                            ax.clear()
+                            ax.remove()
+
+                    a = fig.add_subplot(111)
+                    a2 = a.twinx()
+                    cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+
+                    stats = dframe[gotten].dropna().describe()
+                    
+                    mu = stats.iloc[1]
+                    variance = stats.iloc[2] ** 2
+                    sigma = math.sqrt(variance)
+                    mn = stats.iloc[3]
+                    mx = stats.iloc[7]
+
+                    logBase = 0
+                    if mu * 5 > 2147483647.0:
+                        ## Treat as a large number dataset.
+                        muCopy = mu
+                        while muCopy >= 10.0:
+                            globalMultiplier *= 10.0
+                            muCopy /= 10.0
+                            logBase += 1
+
+                    print(globalMultiplier)
+
+                    globalMax = mx / globalMultiplier
+                    globalMin = mn / globalMultiplier
+                    globalSigma = sigma / globalMultiplier
+                    globalMu = mu / globalMultiplier
+                    globalSigVar.set(u"\u03c3 = " + str(truncate(sigma, 3)) + "\n" + u"\u03bc = " + str(truncate(mu, 3)) +"\nmin = " + str(mn) +  "\nmax = " + str(mx) )
+
+                    x = np.linspace(mn / globalMultiplier, mx / globalMultiplier, 300 + 5 * int(math.sqrt(globalMax - globalMin)))
+                    print(len(x))
+                    a.grid(False)
+                    # a.yaxis.grid()
+
+                    print('gothere')
+                    n, bins, patches = a.hist((dframe[gotten].dropna() / globalMultiplier).tolist(), numBins,
+                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid')# n, bins, patches = a.hist(l, 100, #facecolor = 'red', edgecolor = 'yellow', align = 'mid')
+                    a.set_ylim(0, 1.5 * (max(n)))# a2.axes.yaxis.set_ticklabels([]) -- - no y - axis labels
+
+                    globalBins = bins
+                    globalNPerBin = n
+
+                    useBins = bins
+                    if (numBins >= 30):
+                        l = []
+                        for i in range(0, len(bins), 2):
+                            l += [bins[i]]
+                        useBins = l
+
+                    a.set_xticks(useBins)
+                    a.tick_params(axis = 'x', rotation = 35)
+
+                    xdata = (dframe[gotten].dropna()/globalMultiplier).tolist()
+                    # print(type(xdata))
+                    p0, p1, p2 = ss.weibull_min.fit(xdata, floc=0)
+                    print(p0, p1, p2)
+                    y = ss.weibull_min.pdf(x, p0, p1, p2)
+                    a2.plot(x, y, label = 'newWeibull', lw = 1.0, color = '#8B0000')
+
+                    # sessionDict[a2] = 
+                    #TODO
+                    fillAxis = a2
+                   
+                    xAreaPoints = x
+                    yAreaPoints = y
+                    fillBetFigure = a2.fill_between(x, 0, y, facecolor = '#4B0082', alpha = 0)
+
+                    sLeft.valmax = max(x)
+                    sRight.valmax = max(x)
+                    axLeft.set_xlim(min(x), max(x))
+                    axRight.set_xlim(min(x), max(x))
+                    
+                    a2.set_label('Normal PDF')
+                    a2.grid(False)
+                    a2.set_ylim(0, 1.5 * (max(y)))
+                    # a2.set_xlim(min(x), (max(x)))#tocomment
+                    a2.tick_params(axis = 'y', labelcolor = '#8B0000')
+                    a2.set_ylabel("Distribution Values")
+                    if (globalMultiplier > 1.0):
+                        a.set_xlabel( str(gotten)+" (1e+%d)" % (logBase))
+                    else:
+                        a.set_xlabel(str(gotten))
+                    a.set_ylabel("Frequency")
+
+                    a.legend(bbox_to_anchor=(0, 1.08, 1, .102), loc=3,
+                            ncol=1, borderaxespad=0)
+                    # a.annotate(s = 'Hello', xy = (-0.1,-0.1), xytext= (.1,.1))
+                    graphTitle.set('Weibull PDF of '+ str(gotten))
+                    cancan.thisFigure.suptitle(graphTitle.get(), fontsize=14, fontweight='bold')
+                    totalArea = trapz(y, x)
+                    canvas.draw()
+                cancan.axpopup.entryconfig(1,state='normal')
+                cancan.addable_menu.entryconfig(0, state = 'normal')
+
+                wasPlotted = True
+        except ValueError, e:
+            tkMessageBox.showerror("Data NA Error", "Data at header " + str(gotten)
+                + " in file " + str(dataFile) + " is missing or invalid.\n\n" + " Error:" + str(e))
+            canvas.draw()
+            wasPlotted = False
+            cancan.axpopup.entryconfig(1,state='disabled')
+            cancan.addable_menu.entryconfig(0, state = 'disabled')
+            return
+        except TypeError, e:
+            tkMessageBox.showerror("Parsing Error", "Data not valid at header " +
+                gotten + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
+            canvas.draw()
+            cancan.axpopup.entryconfig(1,state='disabled')
+            cancan.addable_menu.entryconfig(0, state = 'disabled')
+            wasPlotted = False
+            return
+        except KeyError, e:
+            tkMessageBox.showerror("Parsing Error", "Data not valid at header " +
+                gotten + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
+            canvas.draw()
+            cancan.axpopup.entryconfig(1,state='disabled')
+            cancan.addable_menu.entryconfig(0, state = 'disabled')
+            wasPlotted = False
+            return
