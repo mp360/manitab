@@ -131,7 +131,6 @@ maximizedAxis = None
 toMaximize = []
 toMaximizeType = None
 fig_dict = {}
-graphList = []
 maximizedGeometry = (1,1,1)
 pdfTypeCombobox = None
 cursorPosLabel = None
@@ -936,9 +935,11 @@ def popupmsg(purpose):
             elif checkedY:
                 chkToMarkX.config(state='disabled')
                 axToMarkVar.set('Y location 1: ')
+                entryVar.set(str(cancan.cursorLocation[1]))
             elif checkedX:
                 chkToMarkY.config(state='disabled')
                 axToMarkVar.set('X location 1: ')
+                entryVar.set(str(cancan.cursorLocation[0]))
 
         elif (purpose == 'Switch Shading Limit Type'):
             checkedST = stType.get()
@@ -1048,12 +1049,13 @@ def popupmsg(purpose):
 
                 print(a)
                 if toMarkY.get():
-                    if len(yAreaPoints) > 0 and (a > max(cancan.clickedAxes.get_xticks()) or a < min(yAreaPoints)):
-                        print('gothere')
+                    if len(yAreaPoints) > 0 and (a > max(cancan.clickedAxes.get_yticks()) or a < min(yAreaPoints)):
+                        # ALERT line not graphed
                         continue
                 elif toMarkX.get():
                     if len(xAreaPoints) > 0 and (a > max(xAreaPoints) or a < min(xAreaPoints)):
                         continue
+                        # ALERT line not graphed
 
                 # elif len(xAreaPoints) > 0 and (a < min(xAreaPoints)):
                 #     a = min(xAreaPoints)
@@ -1073,8 +1075,8 @@ def popupmsg(purpose):
                     for i in cancan.clickedAxes.get_xticks():
                         if i != max(cancan.clickedAxes.get_xticks()):
                             modTicks += [i]
-                    refLines += [cancan.clickedAxes.axhline(a, 1, 0, color= '#000080', lw = .5, linestyle = '--')]
-                    textBoxes += [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=270,
+                    refLines += [cancan.clickedAxes.axhline(a, min(xAreaPoints), max(xAreaPoints), color= '#000080', lw = .5, linestyle = '--')]
+                    textBoxes += [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
 
                 print(refLines)
@@ -1448,6 +1450,15 @@ class PageThree(tk.Frame):
         self.columnconfigure(2, weight=1)
         self.columnconfigure(3, weight=1)
 
+        fig = Figure(dpi = 100)
+        fig.subplots_adjust(bottom = 0.0, right = .75, top = .85)
+        fig.subplots_adjust(wspace=.3, hspace=.35)
+        # fig.subplots_adjust(bottom = 0.18, right = .85, top = .85)
+        fig.patch.set_facecolor('#E0E0E0')
+        fig.patch.set_alpha(0.7)
+        a = fig.add_subplot(111)
+        a2 = a.twinx()
+
         # content = tk.Frame(self)
         toolbarContainer = tk.Frame(self, width=200, height=20)
 
@@ -1783,7 +1794,7 @@ class PageThree(tk.Frame):
                     if graphType == 'Weibull Distribution':
                         p0, p1, p2=ss.weibull_min.fit(datesDF[gotten].dropna().tolist(), floc=0)
                         y = ss.weibull_min.pdf(x, p0, p1, p2)
-                        a3.plot(x, y, label = 'weibull', lw = 1.0, color = '#8B0000')
+                        a3.plot(x, y, label = 'weibull distribution', lw = 1.0, color = '#8B0000')
                         print(a3.get_label())
                         graphTitle.set('Weibull PDF of ' + str(gotten))
 
@@ -1792,7 +1803,7 @@ class PageThree(tk.Frame):
                             y = y + [np.reciprocal(stats.iloc[2][gotten] * math.sqrt(2 * np.pi))
                                 * np.reciprocal(np.exp(0.5 * ((xElem - stats.iloc[1][gotten]) / (stats.iloc[2][gotten])) ** 2))]
                         graphTitle.set('Normal PDF of ' + str(gotten))
-                        a3.plot(x, y, label = 'norm', lw = 1.0, color = '#8B0000')
+                        a3.plot(x, y, label = 'normal distribution', lw = 1.0, color = '#8B0000')
 
                     elif graphType == 'Lognormal Distribution':
                         s, p1, p2 = ss.lognorm.fit([i for i in datesDF[gotten].dropna().tolist() if i > 0.0], floc = 0)
@@ -1800,7 +1811,7 @@ class PageThree(tk.Frame):
                         print(globalSigma, globalMu)
                         y = ss.lognorm.pdf(x, s, p1, p2)
                         print('gothere')
-                        a3.plot(x, y, color = '#8B0000', lw=1.0, label='lognorm')
+                        a3.plot(x, y, color = '#8B0000', lw=1.0, label='lognormal distribution')
                         graphTitle.set('Lognormal PDF of ' + str(gotten))
 
                     elif graphType == 'Loglogistic Distribution':
@@ -1808,14 +1819,14 @@ class PageThree(tk.Frame):
                         print(c,p1, p2)
                         print(globalSigma, globalMu)
                         y = ss.fisk.pdf(x, c, p1, globalMu)
-                        a3.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic')                       
+                        a3.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic distribution')                       
                         graphTitle.set('Loglogistic PDF of ' + str(gotten))
 
                     elif graphType == 'Logistic Distribution':
                         p0, p1 =ss.logistic.fit(datesDF[gotten].dropna().tolist(), floc=globalMu)
                         print(p0, p1)
                         y = ss.logistic.pdf(x, p0, p1)
-                        a3.plot(x, y, label = 'logistic', lw = 1.0, color = '#8B0000')
+                        a3.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Logistic PDF of ' + str(gotten))
 
                     a.set_ylim(0, 1.5 * (max(n)))
@@ -1907,14 +1918,14 @@ class PageThree(tk.Frame):
                         p0, p1, p2 = ss.weibull_min.fit(xdata, floc=0)
                         print(p0, p1, p2)
                         y = ss.weibull_min.pdf(x, p0, p1, p2)
-                        a2.plot(x, y, label = 'newWeibull', lw = 1.0, color = '#8B0000')
+                        a2.plot(x, y, label = 'weibull distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Weibull PDF of ' + str(gotten))
 
                     elif graphType == 'Normal Distribution':
                         for xElem in x:
                             y = y + [np.reciprocal(globalSigma * math.sqrt(2 * np.pi))
                                 * np.reciprocal(np.exp(0.5 * ((xElem - globalMu) / (globalSigma)) ** 2))]
-                        a2.plot(x, y, label = 'norm', lw = 1.0, color = '#8B0000')
+                        a2.plot(x, y, label = 'normal distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Normal PDF of ' + str(gotten))
 
                     elif graphType == 'Lognormal Distribution':
@@ -1923,20 +1934,20 @@ class PageThree(tk.Frame):
                         print(globalSigma, globalMu)
                         y = ss.lognorm.pdf(x, s, p1, p2)
                         print('gothere')
-                        a2.plot(x, y, color = '#8B0000', lw=1.0, label='lognorm')
+                        a2.plot(x, y, color = '#8B0000', lw=1.0, label='lognormal distribution')
                         graphTitle.set('Lognormal PDF of ' + str(gotten))
                     elif graphType == 'Loglogistic Distribution':
                         c, p1, p2 = ss.fisk.fit([i for i in xdata if i > 0.0], floc = 0)
                         print(c,p1, p2)
                         print(globalSigma, globalMu)
                         y = ss.fisk.pdf(x, c, p1, globalMu)
-                        a2.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic')
+                        a2.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic distribution')
                         graphTitle.set('Loglogistic PDF of ' + str(gotten))
                     elif graphType == 'Logistic Distribution':
                         p0, p1 =ss.logistic.fit(xdata, floc=globalMu)
                         print(p0, p1)
                         y = ss.logistic.pdf(x, p0, p1)
-                        a2.plot(x, y, label = 'logistic', lw = 1.0, color = '#8B0000')
+                        a2.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Logistic PDF of ' + str(gotten))
                     a.grid(False)
                     # a.yaxis.grid()
@@ -2025,7 +2036,6 @@ def weibullPPF(canvas):
     global a
     global a2
     global fig
-    global graphList
     global axLeft
     global axRight
     global multiCursor
@@ -2065,11 +2075,12 @@ def weibullPPF(canvas):
     # TODO TODO TODO
     fig_dict[fig] = {}
     fig_dict[fig]['fig_next'] = None
+    fig_dict[fig]['sessionType'] = 'RELA'
     fig_dict[fig]['numAxes'] = 4
     fig_dict[fig]['csv_src'] = dataFile
     fig_dict[fig]['slider_axes'] = [axLeft, axRight]
     fig_dict[fig]['dictOfAxes'] = {}
-        
+      
 
     ax1 = fig.add_subplot(221)
     ax2 = fig.add_subplot(222)
@@ -2100,8 +2111,6 @@ def weibullPPF(canvas):
         InformativeCursor(ax2, useblit=True, color='red', linewidth=.5)
     ]
 
-    graphList += [ax2,ax1,ax3,ax4]
-
 
     # x=ss.weibull_min.rvs(c, size=nsample)
     # x = (5,16,16,17,28,30,39,39,43,45,51,53,58,61,66,68,68,72,72,77,78,80,81,90,96,100,109,110,131,153,165,180,186,188,207,219,265,285,285,308,334,340,342,370,397,445,482,515,545,583,596,630,670,675,733,841,852,915,941,979,995,1032,1141,1321,1386,1407,1571,1586,1799)
@@ -2121,19 +2130,21 @@ def weibullPPF(canvas):
     mx = max(sortedX)
     xSpan = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
     y = ss.weibull_min.pdf(xSpan, p0, p1, p2)
-    ax1.plot(xSpan, y, label = 'weibull', lw = 1.0, color = '#8B0000')
+    ax1.plot(xSpan, y, 
+        label = 'weibull distribution', 
+        lw = 1.0, 
+        color = '#8B0000')
     ax1.set_ylim(0, 1.5 * (max(y)))
     ax1.set_title('Weibull Distribution', y =1.04)
     ax1.set_xlabel("Time, (t)")
     ax1.set_ylabel("f(t)")
-    print(p0)
-    print(p2)
-
 
     xSpan2 = np.linspace(mn, mx, 300 + 5 * int(math.sqrt(mx - mn)))
     unrelValuesFull = [1-np.exp(-1*((xi/p2)**p0)) for xi in xSpan2]
     unrelValues= [1-np.exp(-1*((xi/p2)**p0)) for xi in sortedX]
-    ax2.plot(sortedX, medianRanks,'ob', markersize = 2.3)
+    ax2.plot(sortedX, medianRanks,'ob', 
+        markersize = 2.3, 
+        label = 'weibull probability plot')
     ax2.plot(xSpan2, unrelValuesFull, color = '#8B0000', lw = 1.0)
     ax2.set_yscale('mercator')
     ax2.set_xscale('log')
@@ -2144,13 +2155,18 @@ def weibullPPF(canvas):
     ax2.set_xlabel("Time, (t)")
     ax2.set_ylabel("Unreliability F(t)")
 
-    ax3.plot(xSpan, [np.exp(-1*((xi/p2)**p0)) for xi in xSpan], label = 'survival (reliability) function', color = '#8B0000', lw = 1.0)
+    ax3.plot(xSpan, [np.exp(-1*((xi/p2)**p0)) for xi in xSpan], 
+        label = 'weibull survival (reliability) function', 
+        color = '#8B0000', lw = 1.0)
     ax3.set_title('Survival Function', y =1.04)
     ax3.set_xlabel("Time, (t)")
     ax3.set_ylabel("Reliability 1-F(t)")
     ax3.set_ylim(0, max(ax3.get_ylim()))
 
-    ax4.plot(xSpan, [(p0/p2)*(xi/p2)**(p0 - 1) for xi in xSpan], label = 'failure rate (hazard) function', lw = 1.0, color = '#8B0000')
+    ax4.plot(xSpan, [(p0/p2)*(xi/p2)**(p0 - 1) for xi in xSpan], 
+        label = 'weibull failure rate (hazard) function', 
+        lw = 1.0, 
+        color = '#8B0000')
     ax4.set_title('Hazard Function', y =1.04)
     ax4.set_xlabel("Time, (t)")
     ax4.set_ylabel("Failure Rate (fr/time)")

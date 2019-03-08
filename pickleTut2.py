@@ -5,7 +5,12 @@ import matplotlib
 matplotlib.use("TkAgg")
 
 output = file('sinus.pickle','rb')
-fig_handle = pl.load(output)
+dictPickle = pl.load(output)
 output.close()
-print(fig_handle.get_axes())
+keys = dictPickle.keys()
+
+
+# fig_handle = pl.load(output)
+# output.close()
+# print(fig_handle.get_axes())
 plt.show()
