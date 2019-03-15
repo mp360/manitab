@@ -489,14 +489,12 @@ class MercatorLatitudeScale(mscale.ScaleBase):
             if masked.mask.any():
                 # return ma.log(np.abs(ma.tan(masked) + 1.0 / ma.cos(masked)))
                 # return np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in masked])
-                print('masked1')
                 # print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
                 return np.array([np.log(np.log(1/(1-xi))) for xi in masked])
 
             else:
                 # return np.log(np.abs(np.tan(a) + 1.0 / np.cos(a)))
                 # return  np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in a])
-                print('masked2')
                 # print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
                 return np.array([np.log(np.log(1/(1-xi))) for xi in masked])
 
@@ -1049,7 +1047,7 @@ def popupmsg(purpose):
 
                 print(a)
                 if toMarkY.get():
-                    if len(yAreaPoints) > 0 and (a > max(cancan.clickedAxes.get_yticks()) or a < min(yAreaPoints)):
+                    if len(yAreaPoints) > 0 and (a > max(cancan.clickedAxes.get_yticks()) or a < 0):
                         # ALERT line not graphed
                         continue
                 elif toMarkX.get():
@@ -1075,7 +1073,7 @@ def popupmsg(purpose):
                     for i in cancan.clickedAxes.get_xticks():
                         if i != max(cancan.clickedAxes.get_xticks()):
                             modTicks += [i]
-                    refLines += [cancan.clickedAxes.axhline(a, min(xAreaPoints), max(xAreaPoints), color= '#000080', lw = .5, linestyle = '--')]
+                    refLines += [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
                     textBoxes += [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
 
@@ -1380,7 +1378,34 @@ class PageThree(tk.Frame):
             else:
                 buttContainer.grid_forget()
                 expandButton.configure(text='+')
-        
+
+        def load_workspace_figure():
+            global axRight
+            global axLeft
+            global sRight
+            global sLeft
+            print(canContainer)
+            # canvas = FancyFigureCanvas(fig2, canContainer)
+            # connection_id = canvas.mpl_connect('button_press_event', on_press) #uncomment
+            # cancan = canvas
+            # cancan.axpopup.entryconfig(1, state='disabled')
+            # cancan.addable_menu.entryconfig(0, state = 'disabled')
+            # if a.get_visible() and a2.get_visible():
+            #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+            # can = canvas.get_tk_widget()
+            # canContainer.grid(row=1, column=1, sticky = "nsew", ipadx = 5, ipady = 5)
+
+            try: 
+                cancan.get_tk_widget().destroy()
+                cancan = None
+            except:
+                pass    
+
+            # axes2.plot(data)
+            # cancan = FancyFigureCanvas(fig2, canContainer)
+            # can = cancan.get_tk_widget()
+            # can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+
         def go_to_next_slide():
             global axRight
             global axLeft
@@ -1402,7 +1427,7 @@ class PageThree(tk.Frame):
                 cancan = None
             except:
                 pass    
-            data=np.arange(100)  # data to plot
+            # data=np.arange(100)  # data to plot
 
 
             # TODO TODO TODO
@@ -1416,12 +1441,14 @@ class PageThree(tk.Frame):
             fig2.subplots_adjust(wspace=.3, hspace=.35)
             fig2.patch.set_facecolor('#E0E0E0')
             fig2.patch.set_alpha(0.7)
+            a = fig2.add_subplot(111)
+            a2 = a.twinx()
 
-            axes2 = fig2.add_subplot(111)
-            axes2.plot(data)
+            # axes2.plot(data)
             cancan = FancyFigureCanvas(fig2, canContainer)
             can = cancan.get_tk_widget()
             can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+
 
             # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
             with plt.style.context('classic'):
@@ -1438,7 +1465,6 @@ class PageThree(tk.Frame):
             sLeft.on_changed(update)
             sRight.on_changed(update)
             # cancan.toggle_slider_vis()
-
 
 
         tk.Frame.__init__(self, parent)
@@ -1603,7 +1629,7 @@ class PageThree(tk.Frame):
         binningLabel = ttk.Label(buttContainer, text = "No. Bins:", font = SMALL_FONT)
         binningLabel.grid(sticky = "e", row=1+2, column= 1, padx = 2, pady = 4)
            
-        plotButton = ttk.Button(buttContainer, text = "Plot", command = lambda: self.plotDecider(canvas))#self.weibullPPF(canvas))#self.plotDecider(canvas))
+        plotButton = ttk.Button(buttContainer, text = "New Plot", command = lambda: self.plotDecider(canvas))#self.weibullPPF(canvas))#self.plotDecider(canvas))
         plotButton.config(state="disabled")
         plotButton.grid(row=1+12, column=2)
 
@@ -1980,6 +2006,9 @@ class PageThree(tk.Frame):
                     a2.set_label('Normal PDF')
                     a2.grid(False)
                     a2.set_ylim(0, 1.5 * (max(y)))
+                    apxBinDif = (max(xAreaPoints)-min(xAreaPoints))/numBins
+                    a.set_xlim(min(xAreaPoints)-apxBinDif ,max(xAreaPoints) + apxBinDif)
+
                     # a2.set_xlim(min(x), (max(x))) #ToCOMMENT
 
                     a2.tick_params(axis = 'y', labelcolor = '#8B0000')
