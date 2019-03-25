@@ -44,6 +44,8 @@ import itertools
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
+import pickle as pl
+
 LARGE_FONT = ("Verdana", 12)
 MED_FONT = ("Verdana", 10)
 SMALL_FONT = ("Verdana", 8)
@@ -146,6 +148,7 @@ def saveFile():
     global globalNPerBin
     global globalMu
     global globalSigma
+    global fig_dict
     #TODO try-catch when document is open in another program.
     # writeCsv_lock.acquire()
     if (len(globalBins) == 0):
@@ -629,9 +632,12 @@ class InformativeCursor(Cursor):
         self.lineh.set_ydata((event.ydata, event.ydata))
         self.linev.set_visible(self.visible and self.vertOn)
         self.lineh.set_visible(self.visible and self.horizOn)
-        self._update()
+        try:
+            self._update()
+        except:
+            self.canvas.draw_idle()
 
-
+#___________________________________________________________________________________________________
 class FancyFigureCanvas(FigureCanvasTkAgg, tk.Listbox):
     popup_menu = None
     axpopup = None
@@ -658,7 +664,7 @@ class FancyFigureCanvas(FigureCanvasTkAgg, tk.Listbox):
         self.popup_menu.add_command(label="Show Slider", command=self.toggle_slider_vis)
         self.popup_menu.add_command(label = "Hide Table of Stats", command =self.toggle_table_of_stats)
         self.popup_menu.add_command(label="Hide Histogram", command=self.dostuff)
-        self.popup_menu.add_command(label="Save as...", command=saveImage)
+        self.popup_menu.add_command(label="Save as Image", command=saveImage)
 
         self.addable_menu = tk.Menu(parent, tearoff = 0)
         self.addable_menu.add_command(label = "Reference Line", command=self.ref_line_wrapper)
@@ -688,7 +694,7 @@ class FancyFigureCanvas(FigureCanvasTkAgg, tk.Listbox):
     
 
     def toggle_slider_vis(self):
-        showTableOfStats
+        global showTableOfStats
         if axRight != None and axLeft != None:
             axRight.set_visible(not axRight.get_visible())
             axLeft.set_visible(not axLeft.get_visible())
@@ -742,15 +748,21 @@ class FancyFigureCanvas(FigureCanvasTkAgg, tk.Listbox):
         global listOfRefLines
         global textBoxes
         global cancan
+        global fig_dict
+        refLines = fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines']
+        textBoxes = fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['textBoxes']
         for refLine in refLines:
             refLine.remove()
         for entryBox in listOfRefLines:
             entryBox.destroy()
         for txt in textBoxes:
             txt.remove()
+
         listOfRefLines = []
         refLines = []
         textBoxes = []
+        fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] = []
+        fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['textBoxes'] = []
         cancan.draw_idle()
     def maximize_wrapper(self):
         maximize_axes(self.clickedAxes, maximizedGeometry)
@@ -1005,6 +1017,9 @@ def popupmsg(purpose):
         tmpShownWidgs = []
 
         if purpose == 'Add Reference Line 1':
+            if not toMarkX.get() and not toMarkY.get():
+                tkMessageBox.showerror("", "Please choose if you would like to mark X locations or Y locations.\n")
+                return
             for widg in hiddenWidgs:
                 widg.grid()
                 tmpHiddenWidgs += [widg]
@@ -1062,19 +1077,31 @@ def popupmsg(purpose):
                 
                 modTicks = []
 
+
+                # fig_dict[fig]['dictOfAxes'][a3] = {}
+                # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+                    
+
                 if toMarkX.get():
                     for i in cancan.clickedAxes.get_yticks():
                         if i != max(cancan.clickedAxes.get_yticks()):
                             modTicks += [i]
-                    refLines += [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
-                    textBoxes += [cancan.clickedAxes.text(a, max(modTicks) , str(truncate(a, 3)), style='italic', rotation=270,
+                    # refLines += [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
+                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
+                        [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
+
+                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['textBoxes'] += \
+                        [cancan.clickedAxes.text(a, max(modTicks) , str(truncate(a, 3)), style='italic', rotation=270,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
                 else:
                     for i in cancan.clickedAxes.get_xticks():
                         if i != max(cancan.clickedAxes.get_xticks()):
                             modTicks += [i]
-                    refLines += [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
-                    textBoxes += [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
+                    # refLines += [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
+                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
+                        [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
+                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
+                        [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
 
                 print(refLines)
@@ -1257,13 +1284,21 @@ class SeaofBTCapp(tk.Tk):
         modemenu.add_command(label = "Diff of Means")
         menubar.add_cascade (label = "Stats", menu = modemenu)
 
+
         graphmenu = tk.Menu(menubar, tearoff = 0)
         graphmenu.add_command(label = "Histogram/Probability Distribution", command = lambda: pdfPriming(cancan)) ### TODO
         graphmenu.add_separator()
         menubar.add_cascade (label = "Graph", menu = graphmenu)
 
+        wkspmenu = tk.Menu(menubar, tearoff = 0)
+        wkspmenu.add_command(label = "Save Workspace", command = lambda: saveWorkspace()) ### TODO weibull analyzis
+        wkspmenu.add_separator()
+        wkspmenu.add_command(label = "Open Workspace", command = lambda: openWorkspace())
+        menubar.add_cascade (label = "Workspace...", menu = wkspmenu)
+
         tk.Tk.config(self, menu = menubar)
         self.show_frame(PageThree)
+
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
@@ -1325,16 +1360,35 @@ def reset(event):
 def weib(x,lamb,k):
     return (k / lamb) * (x / lamb)**(k-1) * np.exp(-(x/lamb)**k)
 
-def dostuff(event):
-    print(event)
+def saveWorkspace():
+    global fig_dict
+    global fillBetFigure
+
+    if fig_dict[fig]['loaded']:
+        if fig_dict[fig]['numAxes'] == 1 and fig_dict[fig]['sessionType'] == 'PDF':
+            fig_dict[fig]['slider_axes'][2] = fillBetFigure
+    else:
+        if fig_dict[fig]['numAxes'] == 1 and fig_dict[fig]['sessionType'] == 'PDF':
+            fig_dict[fig]['slider_axes'] += [fillBetFigure]
+
+    pl.dump(fig_dict,file('savedWkspc1.pickle','wb'))
     return
 
 def init_fig_dict(axes):
     global fig_dict
     fig_dict[fig]['dictOfAxes'][axes] = {}
     fig_dict[fig]['dictOfAxes'][axes]['refLines'] = []
-    fig_dict[fig]['dictOfAxes'][axes]['addAxes'] = []
+    fig_dict[fig]['dictOfAxes'][axes]['textBoxes'] = []
+    fig_dict[fig]['dictOfAxes'][axes]['addAxes'] = {}
     fig_dict[fig]['dictOfAxes'][axes]['specsTable'] = {}
+    # # TODO TODO TODO
+    # fig_dict[fig] = {}
+    # fig_dict[fig]['fig_next'] = None
+    # fig_dict[fig]['sessionType'] = 'RELA'
+    # fig_dict[fig]['numAxes'] = 4
+    # fig_dict[fig]['csv_src'] = dataFile
+    # fig_dict[fig]['slider_axes'] = [axLeft, axRight]
+    # fig_dict[fig]['dictOfAxes'] = {}
 
 class PageThree(tk.Frame):
     buttContainer = None
@@ -1406,11 +1460,31 @@ class PageThree(tk.Frame):
             # can = cancan.get_tk_widget()
             # can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
 
+        
+        # TODO: this function will open any kind of graph session. Will take in a clicked Axis.
         def go_to_next_slide():
             global axRight
             global axLeft
             global sRight
             global sLeft
+            global a
+            global fig
+            global cursor
+            global cancan
+            global fig_dict
+            global xAreaPoints
+            global yAreaPoints
+            global globalNPerBin
+            global globalBins
+            global fillBetFigure
+            global fillAxis
+            global totalArea
+            global dataFile
+            global globalMin
+            global globalMax
+            global globalMu
+            global globalSigma
+            global globalMultiplier
             print(canContainer)
             # canvas = FancyFigureCanvas(fig2, canContainer)
             # connection_id = canvas.mpl_connect('button_press_event', on_press) #uncomment
@@ -1428,32 +1502,91 @@ class PageThree(tk.Frame):
             except:
                 pass    
             # data=np.arange(100)  # data to plot
-
+            # pl.dump(fig_dict,file('savedWkspc1.pickle','wb'))
 
             # TODO TODO TODO
             # nxt_fig = fig_dict[fig]['fig_next']
             # dictOfAxes = fig_dict[fig]['dictOfAxes'][ax]['reflines']
             
+            # fig_dict[fig] = {}
+            # fig_dict[fig]['fig_next'] = None
+            # fig_dict[fig]['sessionType'] = 'PDF'
+            # fig_dict[fig]['numAxes'] = 1
+            # fig_dict[fig]['csv_src'] = dataFile
+            # fig_dict[fig]['slider_axes'] = [axLeft, axRight]
+            # fig_dict[fig]['dictOfAxes'] = {}
+            # init_fig_dict(a2)
+            # # fig_dict[fig]['dictOfAxes'][a3] = {}
+            # # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+            # fig_dict[fig]['dictOfAxes'][a2]['addAxes'] += [a]
+            # # fig_dict[fig]['dictOfAxes'][a3]['specsTable'] = {}
+            output = file('savedWkspc1.pickle','rb')
+            fig_dict = pl.load(output)
+            output.close()
+            keys = sorted(fig_dict.keys())
+            fig = keys[0]
+            fig_dict[fig]['loaded'] = True
+            dataFile = fig_dict[fig]['csv_src']
+            if len(fig_dict[fig]['slider_axes']) == 3:
+                axLeft, axRight, fillBetFigure = fig_dict[fig]['slider_axes']
+            elif len(fig_dict[fig]['slider_axes']) == 2:
+                axLeft, axRight = fig_dict[fig]['slider_axes']
 
-            fig2 = Figure(dpi = 100)
+            if fig_dict[fig]['numAxes'] == 1 and fig_dict[fig]['sessionType'] == 'PDF':
+                topAxis = fig_dict[fig]['dictOfAxes'].keys()[0]
+                globalMin = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mn']
+                globalMu = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mu']
+                globalMax = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mx']
+                globalSigma = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['sigma']
+                globalMultiplier = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['multiplier']
+                fillAxis = topAxis
+                print fig_dict[fig]['csv_src']
+                for line in topAxis.get_lines():
+                    if '_' not in line.get_label():
+                        xAreaPoints = line.get_xdata()
+                        yAreaPoints = line.get_ydata()
+                        totalArea = trapz(yAreaPoints, xAreaPoints)
+                        break
+                addAxesDict = fig_dict[fig]['dictOfAxes'][topAxis]['addAxes']
+                for axkey in addAxesDict.keys():
+                    for artist in axkey.get_children():
+                        if artist.get_label() == 'histogram':
+                            list_a, list_b = zip(*addAxesDict[axkey])
+                            globalNPerBin = list(list_b)
+                            globalBins = list(list_a)
+                            break
+                print(globalNPerBin)
+                print(globalBins)
+                # xAreaPoints = topAxis.get_xdata()
+                # yAreaPoints = topAxis.get_ydata()
 
-            fig2.subplots_adjust(bottom = 0.25, right = .85, top = .85)
-            fig2.subplots_adjust(wspace=.3, hspace=.35)
-            fig2.patch.set_facecolor('#E0E0E0')
-            fig2.patch.set_alpha(0.7)
-            a = fig2.add_subplot(111)
-            a2 = a.twinx()
+            # fig = None
+            # fig = Figure(dpi = 100)
+            # fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
+            # fig.subplots_adjust(wspace=.3, hspace=.35)
+            # fig.patch.set_facecolor('#E0E0E0')
+            # fig.patch.set_alpha(0.7)
+            # a = fig.add_subplot(111)
+            # a2 = a.twinx()
 
+
+
+            # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
+            # canContainer.bind('<Button-3>', on_press_area)
             # axes2.plot(data)
-            cancan = FancyFigureCanvas(fig2, canContainer)
+            cancan = FancyFigureCanvas(fig, canContainer)
             can = cancan.get_tk_widget()
             can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+            cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
+            connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
+            cancan.axpopup.entryconfig(1, state='disabled')
+            cancan.addable_menu.entryconfig(0, state = 'disabled')
 
+            # if a.get_visible() and a2.get_visible():
+            #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
 
             # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
             with plt.style.context('classic'):
-                axLeft = fig2.add_axes([0.15, 0.08, 0.67, 0.03], facecolor=axcolor)
-                axRight = fig2.add_axes([0.15, 0.05, 0.67, 0.03], facecolor='#8B0000')
                 sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
                 sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
                 axLeft.clear()
@@ -1465,7 +1598,8 @@ class PageThree(tk.Frame):
             sLeft.on_changed(update)
             sRight.on_changed(update)
             # cancan.toggle_slider_vis()
-
+            cancan.toggle_slider_vis()
+            cancan.toggle_slider_vis()
 
         tk.Frame.__init__(self, parent)
         self.rowconfigure(0, weight=1)
@@ -1629,18 +1763,11 @@ class PageThree(tk.Frame):
         binningLabel = ttk.Label(buttContainer, text = "No. Bins:", font = SMALL_FONT)
         binningLabel.grid(sticky = "e", row=1+2, column= 1, padx = 2, pady = 4)
            
-        plotButton = ttk.Button(buttContainer, text = "New Plot", command = lambda: self.plotDecider(canvas))#self.weibullPPF(canvas))#self.plotDecider(canvas))
+        plotButton = ttk.Button(buttContainer, text = "New Plot", command = lambda: self.plotDecider())#self.weibullPPF(canvas))#self.plotDecider(canvas))
         plotButton.config(state="disabled")
         plotButton.grid(row=1+12, column=2)
 
-        # Button-2 on Aqua
         toExpand = IntVar()
-        # contractImg = tk.PhotoImage(file="contract.gif")
-
-        # chkExpand = ttk.Checkbutton(buttContainer, image = contractImg, variable=toExpand,
-        #     style = 'Toolbutton', command = toggle_this_frame_vis(buttContainer))
-        # chkExpand.grid( row=1, column=1, sticky="e", pady=5, padx=5)
-        # chkExpand.image = contractImg
 
         contractImg = tk.PhotoImage(file="contract.gif")
         # create the image button, image is above (top) the optional text
@@ -1687,9 +1814,76 @@ class PageThree(tk.Frame):
         self.buttContainer = buttContainer
         buttContainer = self.buttContainer
         toolbarContainer = self.toolbarContainer
+        cancan.draw()
 
-        canvas.draw()
+    def set_up_new_figure(self):
+        global axRight
+        global axLeft
+        global sRight
+        global sLeft
+        global a
+        global fig
+        global cursor
+        global cancan
+        global fig_dict
+        global xAreaPoints
+        global yAreaPoints
+        global globalNPerBin
+        global globalBins
+        global fillBetFigure
+        global fillAxis
+        global totalArea
+        global dataFile
+        global globalMin
+        global globalMax
+        global globalMu
+        global globalSigma
+        global globalMultiplier
+        print(canContainer)
+        try: 
+            cancan.get_tk_widget().destroy()
+            cancan = None
+        except:
+            pass    
+        # fig = None
+        fig = Figure(dpi = 100)
+        fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
+        fig.subplots_adjust(wspace=.3, hspace=.35)
+        fig.patch.set_facecolor('#E0E0E0')
+        fig.patch.set_alpha(0.7)
+        a = fig.add_subplot(111)
+        a2 = a.twinx()
 
+        # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
+        # canContainer.bind('<Button-3>', on_press_area)
+        # axes2.plot(data)
+        cancan = FancyFigureCanvas(fig, canContainer)
+        can = cancan.get_tk_widget()
+        can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+        cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
+        connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
+        cancan.axpopup.entryconfig(1, state='disabled')
+        cancan.addable_menu.entryconfig(0, state = 'disabled')
+
+        # if a.get_visible() and a2.get_visible():
+        #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+
+        # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
+        with plt.style.context('classic'):
+            axLeft = fig.add_axes([0.15, 0.08, 0.67, 0.03], facecolor=axcolor)
+            axRight = fig.add_axes([0.15, 0.05, 0.67, 0.03], facecolor='#8B0000')
+            sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
+            sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
+            axLeft.clear()
+            axRight.clear()
+            axRight.grid(False)
+            axLeft.set_xticks([])
+            axLeft.set_yticks([])
+            axRight.set_yticks([])
+        sLeft.on_changed(update)
+        sRight.on_changed(update)
+        cancan.toggle_slider_vis()
+        return cancan
 
     def open_table_wrapper(self):
         popupmsg('Table')
@@ -1705,16 +1899,19 @@ class PageThree(tk.Frame):
             cursor.horizOn = not cursor.horizOn
             cursor.vertOn = not cursor.vertOn
 
-    def plotDecider(self, canvas):
+    def plotDecider(self):
         global dataMultiplier
         global globalMultiplier
         global logBase
         global refLines
         global listOfRefLines
         global textBoxes
+        global fig_dict
         globalMultiplier = 1.0
         logBase = 0
         pdfType = pdfTypeCombobox.get()
+        canvas = self.set_up_new_figure()
+
         print(pdfType)
         for refLine in refLines:
             refLine.remove()
@@ -1724,6 +1921,8 @@ class PageThree(tk.Frame):
             txt.remove()
         listOfRefLines = []
         refLines = []
+        # fig_dict[fig]['dictOfAxes'][axes]['refLines'] = []
+
         textBoxes = []
         self.plot(canvas,pdfType)
 
@@ -1758,9 +1957,11 @@ class PageThree(tk.Frame):
         global cursor
         global globalMultiplier
         global logBase
+        global fig_dict
 
         binType = self.myType.get()
         try:
+
             numBins = globalBinning.get()
             gotten = curHeader.get()
             if dataFile is not None:
@@ -1768,11 +1969,11 @@ class PageThree(tk.Frame):
                 dframe = dframe.sort_values(gotten)
                 a3 = None
                 if (self.myType.get() == "Date (mm/dd/yyyy)"):
-
                     allAxes = fig.get_axes()
                     for ax in allAxes:
                         if ax != axLeft and ax != axRight:
                             ax.clear()
+                            # if fig in fig_dict and fig_dict[fig]['loaded']:
                             ax.remove()
 
                     a = fig.add_subplot(111)
@@ -1813,7 +2014,9 @@ class PageThree(tk.Frame):
                     cursor = InformativeCursor(a3, useblit=True, color='red', linewidth=.5)
 
                     n, bins, patches = a.hist(dframe[gotten].dropna(), numBins,
-                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid')
+                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid', label = 'histogram')
+                    for patch in patches:
+                        print a.get_label()
 
                     x = np.linspace(mn, mx, 300 + 5 * int(math.sqrt(mx - mn)))
                     y = []
@@ -1854,10 +2057,33 @@ class PageThree(tk.Frame):
                         y = ss.logistic.pdf(x, p0, p1)
                         a3.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Logistic PDF of ' + str(gotten))
+                    
+                    # if fig not in fig_dict and not fig_dict[fig]['loaded']:
+                    fig_dict[fig] = {}
+                    fig_dict[fig]['fig_next'] = None
+                    fig_dict[fig]['sessionType'] = 'PDF'
+                    fig_dict[fig]['numAxes'] = 1
+                    fig_dict[fig]['csv_src'] = dataFile
+                    fig_dict[fig]['slider_axes'] = [axLeft, axRight]
+                    fig_dict[fig]['dictOfAxes'] = {}
+                    fig_dict[fig]['loaded'] = False
+                    init_fig_dict(a3)
+
+                    # fig_dict[fig]['dictOfAxes'][a3] = {}
+                    # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+                    # fig_dict[fig]['dictOfAxes'][a3]['specsTable'] = {}
+                    fig_dict[fig]['dictOfAxes'][a3]['specsTable']['mn'] = globalMin
+                    fig_dict[fig]['dictOfAxes'][a3]['specsTable']['mu'] = globalMu 
+                    fig_dict[fig]['dictOfAxes'][a3]['specsTable']['mx'] = globalMax
+                    fig_dict[fig]['dictOfAxes'][a3]['specsTable']['sigma'] = globalSigma
+                    fig_dict[fig]['dictOfAxes'][a3]['specsTable']['multiplier'] = globalMultiplier
+
+
 
                     a.set_ylim(0, 1.5 * (max(n)))
                     globalBins = dates.num2date(bins)
                     globalNPerBin = n
+                    fig_dict[fig]['dictOfAxes'][a3]['addAxes'][a] = zip(globalBins, globalNPerBin)
 
                     # TODO begin graph from x = 0 
 
@@ -1900,8 +2126,12 @@ class PageThree(tk.Frame):
                     allAxes = fig.get_axes()
                     for ax in allAxes:
                         if ax != axLeft and ax != axRight:
+                            print ax
+                            # if fig in fig_dict and fig_dict[fig]['loaded']:
                             ax.clear()
                             ax.remove()
+
+                            # ax.remove()
 
                     a = fig.add_subplot(111)
                     a2 = a.twinx()
@@ -1932,7 +2162,7 @@ class PageThree(tk.Frame):
                     globalSigVar.set(u"\u03c3 = " + str(truncate(sigma, 3)) + "\n" + u"\u03bc = " + str(truncate(mu, 3)) +"\nmin = " + str(mn) +  "\nmax = " + str(mx) )
 
                     n, bins, patches = a.hist((dframe[gotten].dropna() / globalMultiplier).tolist(), numBins,
-                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid')
+                        facecolor = '#00A3E0', edgecolor = 'k', align = 'mid', label = 'histogram')
                     a.set_ylim(0, 1.5 * (max(n)))
 
                     x = np.linspace(globalMin , globalMax, 300 + 5 * int(math.sqrt(globalMax - globalMin)))
@@ -1975,12 +2205,33 @@ class PageThree(tk.Frame):
                         y = ss.logistic.pdf(x, p0, p1)
                         a2.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                         graphTitle.set('Logistic PDF of ' + str(gotten))
+                    
+       
+                    fig_dict[fig] = {}
+                    fig_dict[fig]['fig_next'] = None
+                    fig_dict[fig]['sessionType'] = 'PDF'
+                    fig_dict[fig]['numAxes'] = 1
+                    fig_dict[fig]['csv_src'] = dataFile
+                    fig_dict[fig]['slider_axes'] = [axLeft, axRight]
+                    fig_dict[fig]['dictOfAxes'] = {}
+                    fig_dict[fig]['loaded'] = False
+                    init_fig_dict(a2)
+
+                    # fig_dict[fig]['dictOfAxes'][a3] = {}
+                    # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+                    # fig_dict[fig]['dictOfAxes'][a3]['specsTable'] = {}
+                    fig_dict[fig]['dictOfAxes'][a2]['specsTable']['mn'] = globalMin
+                    fig_dict[fig]['dictOfAxes'][a2]['specsTable']['mu'] = globalMu 
+                    fig_dict[fig]['dictOfAxes'][a2]['specsTable']['mx'] = globalMax
+                    fig_dict[fig]['dictOfAxes'][a2]['specsTable']['sigma'] = globalSigma
+                    fig_dict[fig]['dictOfAxes'][a2]['specsTable']['multiplier'] = globalMultiplier
                     a.grid(False)
                     # a.yaxis.grid()
 
 
                     globalBins = bins
                     globalNPerBin = n
+                    fig_dict[fig]['dictOfAxes'][a2]['addAxes'][a] = zip(globalBins, globalNPerBin)
 
                     useBins = bins
                     if (numBins >= 30):
@@ -2061,12 +2312,15 @@ class PageThree(tk.Frame):
             wasPlotted = False
             return
 
+# TODO FIX 
 def weibullPPF(canvas):
     global a
     global a2
     global fig
     global axLeft
     global axRight
+    global sRight
+    global sLeft
     global multiCursor
     global cancan
     global cursor
@@ -2110,6 +2364,12 @@ def weibullPPF(canvas):
     fig_dict[fig]['slider_axes'] = [axLeft, axRight]
     fig_dict[fig]['dictOfAxes'] = {}
       
+
+
+    # # fig_dict[fig]['dictOfAxes'][a3] = {}
+    # # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+    # fig_dict[fig]['dictOfAxes'][a3]['addAxes'] += [a]
+    # # fig_dict[fig]['dictOfAxes'][a3]['specsTable'] = {}
 
     ax1 = fig.add_subplot(221)
     ax2 = fig.add_subplot(222)
