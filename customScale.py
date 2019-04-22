@@ -13,6 +13,8 @@ from matplotlib.figure import Figure
 
 globalBeta = 0.0
 globalEta = 0.0
+globalMu = 0.0
+globalSigma = 0.0
 
 class MercatorLatitudeScale(mscale.ScaleBase):
     """
@@ -123,6 +125,8 @@ class MercatorLatitudeScale(mscale.ScaleBase):
             self.thresh = thresh
 
         def transform_non_affine(self, a):
+            global globalMu
+            global globalSigma
             """
             This transform takes an Nx1 ``numpy`` array and returns a
             transformed copy.  Since the range of the Mercator scale
@@ -134,22 +138,23 @@ class MercatorLatitudeScale(mscale.ScaleBase):
             same shape as the input array, since these values need to
             remain synchronized with values in the other dimension.
             """
-            
+            x = np.linspace(-5, 5, 5000)
+            stdev = 1
+            mean = 0
             print(a)
             masked = ma.masked_where((a < -self.thresh) | (a > self.thresh), a)
             if masked.mask.any():
                 # return ma.log(np.abs(ma.tan(masked) + 1.0 / ma.cos(masked)))
                 print('masked')
                 # return np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in masked])
-                print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
-                return np.array([np.log(np.log(1/(1- xi))) for xi in masked])
-
-            else:
+                # return np.array([np.log(np.log(1/(1- xi))) for xi in masked])
+                return ss.norm.ppf(masked, globalMu, globalSigma)
+            else:   
                 # return np.log(np.abs(np.tan(a) + 1.0 / np.cos(a)))
                 # return  np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in a])
                 print('masked1')
-                print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
-                return np.array([np.log(np.log(1/(1- xi))) for xi in masked])
+                # return np.array([np.log(np.log(1/(1- xi))) for xi in masked])
+                return ss.norm.ppf(a, globalMu, globalSigma)
 
         def inverted(self):
             """
@@ -165,14 +170,19 @@ class MercatorLatitudeScale(mscale.ScaleBase):
         is_separable = True
         has_inverse = True
 
+
         def __init__(self, thresh):
             mtransforms.Transform.__init__(self)
             self.thresh = thresh
 
         def transform_non_affine(self, a):
+
+            global globalMu
+            global globalSigma
             # return np.array([1 + (-1*(np.exp(np.exp( (1-np.exp(-1*((xi/p2)**p0))) )))**(-1) ) for xi in a])
             # return np.arctan(np.sinh(a))
-            return np.array([1 + (-1*(np.exp(np.exp(xi)))**(-1) ) for xi in a])
+            # return np.array([1 + (-1*(np.exp(np.exp(xi)))**(-1) ) for xi in a])
+            return ss.norm.cdf(a, globalMu, globalSigma)
 
         def inverted(self):
             return MercatorLatitudeScale.MercatorLatitudeTransform(self.thresh)
@@ -185,50 +195,60 @@ mscale.register_scale(MercatorLatitudeScale)
 if __name__ == '__main__':
     global globalBeta
     global globalEta
+    global globalMu
+    global globalSigma
 
     import matplotlib.pyplot as plt
     fig = plt.figure()
-    # fig = Figure(dpi = 100)
-    ax = fig.add_subplot(222)
-
-    # t = np.arange(-180.0, 180.0, 0.1)
-    # s = np.radians(t)/2.
+    ax = fig.add_subplot(111)
+    # FOR WEIBILL
     x = (1037,1429,680,291,1577,90,1090,142,1297,1113,1153,150,837,890,269,468,1476,827,519,1100,1307,1360,919,373,563,978,650,362,383,272)
     x = (0,1,4,7,10,6,14,18,5,12,23,10,3,3,7,3,26,1,2,25,29,29,29,28,2,3,12,32,34,36,29,37,9,16,41,3,6,3,9,18,49,35,17,3,59,2,5,2,1,1,5,9,10,13,3,1,18,17,2,17,22,25,25,25,6,6,2,26,38,22,4,24,41,41,1,44,2,45,2,46,49,50,4,54,38,59)
-    x = (5,16,16,17,28,30,39,39,43,45,51,53,58,61,66,68,68,72,72,77,78,80,81,90,96,100,109,110,131,153,165,180,186,188,207,219,265,285,285,308,334,340,342,370,397,445,482,515,545,583,596,630,670,675,733,841,852,915,941,979,995,1032,1141,1321,1386,1407,1571,1586,1799)
+    # x = (5,16,16,17,28,30,39,39,43,45,51,53,58,61,66,68,68,72,72,77,78,80,81,90,96,100,109,110,131,153,165,180,186,188,207,219,265,285,285,308,334,340,342,370,397,445,482,515,545,583,596,630,670,675,733,841,852,915,941,979,995,1032,1141,1321,1386,1407,1571,1586,1799)
 
+    # sortedX = sorted(x)
+    # p0, p1, p2 = ss.weibull_min.fit(x, floc=0)
+
+    # medianRanks = []
+    # print('medranks')
+    # for i,v in enumerate(sortedX):
+    #     print(i)
+    #     medianRanks += [(i + 1 - 0.3)/(len(x) + 0.4)]
+    # print(medianRanks)
+
+    # ax.grid(True, which = 'both')
+    # ax.plot(sortedX, medianRanks, 'ob')
+    # ax.plot(sortedX, [1-np.exp(-1*((xi /p2)**p0)) for xi in sortedX], color = '#8B0000', lw = 1.0)
+
+    # ax.set_yscale('mercator')
+    # ax.set_xscale('log')
+    # ax.set_axisbelow(True)
+
+    # x = np.linspace(-5, 5, 5000)
     sortedX = sorted(x)
-    p0, p1, p2 = ss.weibull_min.fit(x, floc=0)
-
+    mu, sigma = ss.norm.fit(x)
+    globalMu = mu
+    globalSigma = sigma
     medianRanks = []
+
     print('medranks')
     for i,v in enumerate(sortedX):
         print(i)
         medianRanks += [(i + 1 - 0.3)/(len(x) + 0.4)]
     print(medianRanks)
-
-    # plt.plot(t, s, '-', lw=2)
-
-    # plt.grid(True, which = 'both')
-    # plt.plot(sortedX, medianRanks, 'ob')
-    # plt.plot(sortedX, [1-np.exp(-1*((xi /p2)**p0)) for xi in sortedX], color = '#8B0000', lw = 1.0)
-
-    # plt.gca().set_yscale('mercator')
-    # plt.gca().set_xscale('log')
-    # plt.gca().set_axisbelow(True)
+    y_cdf = ss.norm.cdf(sortedX, mu, sigma) # the normal cdf
+    print y_cdf
 
     ax.grid(True, which = 'both')
     ax.plot(sortedX, medianRanks, 'ob')
-    ax.plot(sortedX, [1-np.exp(-1*((xi /p2)**p0)) for xi in sortedX], color = '#8B0000', lw = 1.0)
 
+    ax.plot(sortedX, y_cdf, label='cdf', lw = 1.0)
     ax.set_yscale('mercator')
-    ax.set_xscale('log')
     ax.set_axisbelow(True)
 
-    # plt.xlabel('Longitude')
-    # plt.ylabel('Latitude')
-    # plt.title('Mercator: Projection of the Oppressor')
     plt.show()
+
+
 ####################_____________________#####################___________________###################
 # class MercatorLatitudeScale(mscale.ScaleBase):
 #     """

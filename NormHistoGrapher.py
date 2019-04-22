@@ -68,6 +68,7 @@ cursor = None
 cursors = []
 # a3 = fig.add_subplot(111)
 # a3.set_visible(False)
+sessionType = None
 canContainer = None
 sessionCanvii = []
 
@@ -139,6 +140,8 @@ cursorPosLabel = None
 listOfRefLines = []
 refLines = []
 textBoxes = []
+
+relaWidgs = []
 
 def saveFile():
     global writeCsv_lock
@@ -1069,24 +1072,13 @@ def popupmsg(purpose):
                     if len(xAreaPoints) > 0 and (a > max(xAreaPoints) or a < min(xAreaPoints)):
                         continue
                         # ALERT line not graphed
-
-                # elif len(xAreaPoints) > 0 and (a < min(xAreaPoints)):
-                #     a = min(xAreaPoints)
-                    # tkMessageBox.showerror("Invalid Limit Value", "One or more limit values are invalid. Please check that the value for cursor A and" +
-                    # " cursor B are within the range of the dataset.\n")
                 
                 modTicks = []
-
-
-                # fig_dict[fig]['dictOfAxes'][a3] = {}
-                # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
-                    
 
                 if toMarkX.get():
                     for i in cancan.clickedAxes.get_yticks():
                         if i != max(cancan.clickedAxes.get_yticks()):
                             modTicks += [i]
-                    # refLines += [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
                     fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
                         [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
 
@@ -1100,16 +1092,11 @@ def popupmsg(purpose):
                     # refLines += [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
                     fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
                         [cancan.clickedAxes.axhline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
-                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['refLines'] += \
+                    fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]['textBoxes'] += \
                         [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
 
                 print(refLines)
-                # refLines += [cancan.clickedAxes.axvline(a, 0, 1, color= '#000080', lw = .5, linestyle = '--')]
-
-
-                # print(cancan.clickedAxes.text(a, max(modTicks) , str(truncate(a, 3)), style='italic', rotation = 270,
-                #         bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15}))
 
             cancan.draw_idle()
             listOfRefLines = []
@@ -1279,7 +1266,7 @@ class SeaofBTCapp(tk.Tk):
         menubar.add_cascade (label = "File", menu = filemenu)
 
         modemenu = tk.Menu(menubar, tearoff = 0)
-        modemenu.add_command(label = "Reliability Analysis", command = lambda: weibullPPF(cancan)) ### TODO weibull analyzis
+        modemenu.add_command(label = "Reliability Analysis", command = lambda: set_up_new_figure('Reliability')) ### TODO weibull analyzis
         modemenu.add_separator()
         modemenu.add_command(label = "Diff of Means")
         menubar.add_cascade (label = "Stats", menu = modemenu)
@@ -1294,6 +1281,8 @@ class SeaofBTCapp(tk.Tk):
         wkspmenu.add_command(label = "Save Workspace", command = lambda: saveWorkspace()) ### TODO weibull analyzis
         wkspmenu.add_separator()
         wkspmenu.add_command(label = "Open Workspace", command = lambda: openWorkspace())
+        wkspmenu.add_separator()
+        wkspmenu.add_command(label = "This Workspace", command = lambda: showThisWorkspace())
         menubar.add_cascade (label = "Workspace...", menu = wkspmenu)
 
         tk.Tk.config(self, menu = menubar)
@@ -1373,6 +1362,134 @@ def saveWorkspace():
 
     pl.dump(fig_dict,file('savedWkspc1.pickle','wb'))
     return
+
+def openWorkspace():
+    global axRight
+    global axLeft
+    global sRight
+    global sLeft
+    global a
+    global fig
+    global cursor
+    global cancan
+    global fig_dict
+    global xAreaPoints
+    global yAreaPoints
+    global globalNPerBin
+    global globalBins
+    global fillBetFigure
+    global fillAxis
+    global totalArea
+    global dataFile
+    global globalMin
+    global globalMax
+    global globalMu
+    global globalSigma
+    global globalMultiplier
+    global canContainer
+
+    try: 
+        cancan.get_tk_widget().destroy()
+        cancan = None
+    except:
+        pass    
+
+    # TODO TODO TODO
+    # nxt_fig = fig_dict[fig]['fig_next']
+    # dictOfAxes = fig_dict[fig]['dictOfAxes'][ax]['reflines']
+    
+    # fig_dict[fig] = {}
+    # fig_dict[fig]['fig_next'] = None
+    # fig_dict[fig]['sessionType'] = 'PDF'
+    # fig_dict[fig]['numAxes'] = 1
+    # fig_dict[fig]['csv_src'] = dataFile
+    # fig_dict[fig]['slider_axes'] = [axLeft, axRight]
+    # fig_dict[fig]['dictOfAxes'] = {}
+    # init_fig_dict(a2)
+    # # fig_dict[fig]['dictOfAxes'][a3] = {}
+    # # fig_dict[fig]['dictOfAxes'][a3]['refLines'] = []
+    # fig_dict[fig]['dictOfAxes'][a2]['addAxes'] += [a]
+    # # fig_dict[fig]['dictOfAxes'][a3]['specsTable'] = {}
+    output = file('savedWkspc1.pickle','rb')
+    fig_dict = pl.load(output)
+    output.close()
+    keys = sorted(fig_dict.keys())
+    fig = keys[0]
+    fig_dict[fig]['loaded'] = True
+    dataFile = fig_dict[fig]['csv_src']
+    if len(fig_dict[fig]['slider_axes']) == 3:
+        axLeft, axRight, fillBetFigure = fig_dict[fig]['slider_axes']
+    elif len(fig_dict[fig]['slider_axes']) == 2:
+        axLeft, axRight = fig_dict[fig]['slider_axes']
+
+    if fig_dict[fig]['numAxes'] == 1 and fig_dict[fig]['sessionType'] == 'PDF':
+        topAxis = fig_dict[fig]['dictOfAxes'].keys()[0]
+        globalMin = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mn']
+        globalMu = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mu']
+        globalMax = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['mx']
+        globalSigma = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['sigma']
+        globalMultiplier = fig_dict[fig]['dictOfAxes'][topAxis]['specsTable']['multiplier']
+        fillAxis = topAxis
+        print fig_dict[fig]['csv_src']
+        for line in topAxis.get_lines():
+            if '_' not in line.get_label():
+                xAreaPoints = line.get_xdata()
+                yAreaPoints = line.get_ydata()
+                totalArea = trapz(yAreaPoints, xAreaPoints)
+                break
+        addAxesDict = fig_dict[fig]['dictOfAxes'][topAxis]['addAxes']
+        for axkey in addAxesDict.keys():
+            for artist in axkey.get_children():
+                if artist.get_label() == 'histogram':
+                    list_a, list_b = zip(*addAxesDict[axkey])
+                    globalNPerBin = list(list_b)
+                    globalBins = list(list_a)
+                    break
+        print(globalNPerBin)
+        print(globalBins)
+        # xAreaPoints = topAxis.get_xdata()
+        # yAreaPoints = topAxis.get_ydata()
+
+    # fig = None
+    # fig = Figure(dpi = 100)
+    # fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
+    # fig.subplots_adjust(wspace=.3, hspace=.35)
+    # fig.patch.set_facecolor('#E0E0E0')
+    # fig.patch.set_alpha(0.7)
+    # a = fig.add_subplot(111)
+    # a2 = a.twinx()
+
+
+
+    # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
+    # canContainer.bind('<Button-3>', on_press_area)
+    # axes2.plot(data)
+    cancan = FancyFigureCanvas(fig, canContainer)
+    can = cancan.get_tk_widget()
+    can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+    cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
+    connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
+    cancan.axpopup.entryconfig(1, state='disabled')
+    cancan.addable_menu.entryconfig(0, state = 'disabled')
+
+    # if a.get_visible() and a2.get_visible():
+    #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+
+    # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
+    with plt.style.context('classic'):
+        sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
+        sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
+        axLeft.clear()
+        axRight.clear()
+        axRight.grid(False)
+        axLeft.set_xticks([])
+        axLeft.set_yticks([])
+        axRight.set_yticks([])
+    sLeft.on_changed(update)
+    sRight.on_changed(update)
+    # cancan.toggle_slider_vis()
+    cancan.toggle_slider_vis()
+    cancan.toggle_slider_vis()
 
 def init_fig_dict(axes):
     global fig_dict
@@ -1626,6 +1743,8 @@ class PageThree(tk.Frame):
         # height=toolbarContainer.winfo_height()
         expandButtonFrame = tk.Frame(self)
         buttContainer = tk.Frame(self, width=50, height=200)
+        relaButtContainer = tk.Frame(self, width=50, height=200)
+
         canContainer = tk.Frame(self, width=200, height=200)
         canvas = FancyFigureCanvas(fig, canContainer)
         connection_id = canvas.mpl_connect('button_press_event', on_press) #uncomment
@@ -1648,7 +1767,6 @@ class PageThree(tk.Frame):
         canContainer.grid(row=1, column=1, sticky = "nsew", ipadx = 5, ipady = 5)
         toolbarContainer.grid(row=0, column=1, sticky = "nsew", pady = 5, padx = 5)
         expandButtonFrame.grid(row=0, column = 2, sticky = 'nsew')
-        buttContainer.grid(row=0, column=3, rowspan = 2, sticky = "nsew", pady = 5, padx = 5)
         can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
         canvas._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
 
@@ -1658,15 +1776,6 @@ class PageThree(tk.Frame):
         _cursorPosLabel= ttk.Label(self, text = "Inputs", textvariable = self.cursorPosLabel, font = SMALL_FONT, background = 'lightgoldenrodyellow', 
             borderwidth=1, relief = 'solid', padding = (5,5, 5,5))
         _cursorPosLabel.grid(sticky = "nw", row=1, column= 1, pady = 8, padx = 8)
-
-        # rax = fig.add_axes([0.05, 0.7, 0.15, 0.15], facecolor=axcolor)
- 
-        # rax.set_xticks([])
-        # rax.set_yticks([])
-        # _cursorPosLabel.grid(sticky = "ne", row=1+11, column=1, columnspan = 2, padx = 4, pady = 4)
-
-        # sigLabel = ttk.Label(buttContainer, background = "white", textvariable = self.sigmaVar, font = MED_FONT, borderwidth=1, relief = 'solid', padding = (5,5, 5,5), width = 18)
-        # sigLabel.grid(sticky = "ne", row=1+9, column=1, columnspan = 2, padx = 4, pady = 4)
 
         self.binning = IntVar()
         globalBinning = self.binning
@@ -1679,7 +1788,8 @@ class PageThree(tk.Frame):
 
         crossHairsImg = tk.PhotoImage(file="crosHairs.gif")
         # create the image button, image is above (top) the optional text
-        crosHairsButton = ttk.Button(toolbarContainer, image=crossHairsImg, command = lambda: self.toggleCrossHairs())
+        self.toggleCrossHairs()
+        crosHairsButton = ttk.Checkbutton(toolbarContainer, image=crossHairsImg, command = lambda: self.toggleCrossHairs(), style = 'Toolbutton')
         crosHairsButton.grid(sticky = "w", row=0, column= 0)
         crosHairsButton.image = crossHairsImg
 
@@ -1689,10 +1799,18 @@ class PageThree(tk.Frame):
         tableButton.grid(sticky = "w", row=0, column= 1)
         tableButton.image = tableImg
 
-        prevGraphButton = ttk.Button(toolbarContainer, image=tableImg, command = lambda: go_to_next_slide()) 
-        prevGraphButton.grid(sticky = "w", row=0, column= 2)
+        # TODO
+        # prevGraphButton = ttk.Button(toolbarContainer, image=tableImg, command = lambda: go_to_next_slide()) 
+        # prevGraphButton.grid(sticky = "w", row=0, column= 2)
         
+        addToWkspcImg = tk.PhotoImage(file="addToWkspc.gif")
+        addToWorkspaceButton = ttk.Button(toolbarContainer, image=addToWkspcImg, command = lambda: go_to_next_slide()) 
+        addToWorkspaceButton.grid(sticky = "w", row=0, column= 2)
+        addToWorkspaceButton.image = addToWkspcImg
 
+        headerLabel = ttk.Label(toolbarContainer, text = ":", font = LARGE_FONT)
+
+        
         headerLabel = ttk.Label(buttContainer, text = "Column Header:", font = SMALL_FONT)
         headerLabel.grid(sticky = "e", row=1+1, column= 1, padx = 2, pady = 4)
         headerDropDown = ttk.Combobox(buttContainer, state="readonly", values = (" --"),
@@ -1763,7 +1881,7 @@ class PageThree(tk.Frame):
         binningLabel = ttk.Label(buttContainer, text = "No. Bins:", font = SMALL_FONT)
         binningLabel.grid(sticky = "e", row=1+2, column= 1, padx = 2, pady = 4)
            
-        plotButton = ttk.Button(buttContainer, text = "New Plot", command = lambda: self.plotDecider())#self.weibullPPF(canvas))#self.plotDecider(canvas))
+        plotButton = ttk.Button(buttContainer, text = "New Plot Session", command = lambda: self.plotDecider())#self.weibullPPF(canvas))#self.plotDecider(canvas))
         plotButton.config(state="disabled")
         plotButton.grid(row=1+12, column=2)
 
@@ -1778,6 +1896,12 @@ class PageThree(tk.Frame):
 
         props = dict(boxstyle='round', facecolor='lightblue', lw = .25)
         statTableTxt = fig.text(x = .85, y=.75, s = globalSigVar.get(), bbox = props, fontsize = 9)
+
+        # ________RELIABILITY BAR_________#
+
+        relaWidgs += [areaPCTLabel, sigLabel, statsLabel, label, headerLabel, headerDropDown, typeLabel, cmbBox2, distTypeLabel, pdfTypeCombobox, button2, plotButton]
+
+        buttContainer.grid(row=0, column=3, rowspan = 2, sticky = "nsew", pady = 5, padx = 5)
 
         #MOVE TO PLOT
         # CREATE THE SLIDER, AND CONFIGURE.
@@ -1816,74 +1940,73 @@ class PageThree(tk.Frame):
         toolbarContainer = self.toolbarContainer
         cancan.draw()
 
-    def set_up_new_figure(self):
-        global axRight
-        global axLeft
-        global sRight
-        global sLeft
-        global a
-        global fig
-        global cursor
-        global cancan
-        global fig_dict
-        global xAreaPoints
-        global yAreaPoints
-        global globalNPerBin
-        global globalBins
-        global fillBetFigure
-        global fillAxis
-        global totalArea
-        global dataFile
-        global globalMin
-        global globalMax
-        global globalMu
-        global globalSigma
-        global globalMultiplier
-        print(canContainer)
-        try: 
-            cancan.get_tk_widget().destroy()
-            cancan = None
-        except:
-            pass    
-        # fig = None
-        fig = Figure(dpi = 100)
-        fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
-        fig.subplots_adjust(wspace=.3, hspace=.35)
-        fig.patch.set_facecolor('#E0E0E0')
-        fig.patch.set_alpha(0.7)
-        a = fig.add_subplot(111)
-        a2 = a.twinx()
+    # def set_up_new_figure(self):
+    #     global axRight
+    #     global axLeft
+    #     global sRight
+    #     global sLeft
+    #     global a
+    #     global fig
+    #     global cursor
+    #     global cancan
+    #     global fig_dict
+    #     global xAreaPoints
+    #     global yAreaPoints
+    #     global globalNPerBin
+    #     global globalBins
+    #     global fillBetFigure
+    #     global fillAxis
+    #     global totalArea
+    #     global dataFile
+    #     global globalMin
+    #     global globalMax
+    #     global globalMu
+    #     global globalSigma
+    #     global globalMultiplier
+    #     try: 
+    #         cancan.get_tk_widget().destroy()
+    #         cancan = None
+    #     except:
+    #         pass    
+    #     # fig = None
+    #     fig = Figure(dpi = 100)
+    #     fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
+    #     fig.subplots_adjust(wspace=.3, hspace=.35)
+    #     fig.patch.set_facecolor('#E0E0E0')
+    #     fig.patch.set_alpha(0.7)
+    #     a = fig.add_subplot(111)
+    #     a2 = a.twinx()
 
-        # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
-        # canContainer.bind('<Button-3>', on_press_area)
-        # axes2.plot(data)
-        cancan = FancyFigureCanvas(fig, canContainer)
-        can = cancan.get_tk_widget()
-        can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
-        cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
-        connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
-        cancan.axpopup.entryconfig(1, state='disabled')
-        cancan.addable_menu.entryconfig(0, state = 'disabled')
+    #     # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
+    #     # canContainer.bind('<Button-3>', on_press_area)
+    #     # axes2.plot(data)
+    #     cancan = FancyFigureCanvas(fig, canContainer)
+    #     can = cancan.get_tk_widget()
+    #     can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+    #     cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
+    #     connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
+    #     cancan.axpopup.entryconfig(1, state='disabled')
+    #     cancan.addable_menu.entryconfig(0, state = 'disabled')
 
-        # if a.get_visible() and a2.get_visible():
-        #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+    #     # if a.get_visible() and a2.get_visible():
+    #     #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
 
-        # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
-        with plt.style.context('classic'):
-            axLeft = fig.add_axes([0.15, 0.08, 0.67, 0.03], facecolor=axcolor)
-            axRight = fig.add_axes([0.15, 0.05, 0.67, 0.03], facecolor='#8B0000')
-            sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
-            sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
-            axLeft.clear()
-            axRight.clear()
-            axRight.grid(False)
-            axLeft.set_xticks([])
-            axLeft.set_yticks([])
-            axRight.set_yticks([])
-        sLeft.on_changed(update)
-        sRight.on_changed(update)
-        cancan.toggle_slider_vis()
-        return cancan
+    #     # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
+    #     with plt.style.context('classic'):
+    #         axLeft = fig.add_axes([0.15, 0.08, 0.67, 0.03], facecolor=axcolor)
+    #         axRight = fig.add_axes([0.15, 0.05, 0.67, 0.03], facecolor='#8B0000')
+    #         sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
+    #         sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
+    #         axLeft.clear()
+    #         axRight.clear()
+    #         axRight.grid(False)
+    #         axLeft.set_xticks([])
+    #         axLeft.set_yticks([])
+    #         axRight.set_yticks([])
+    #     sLeft.on_changed(update)
+    #     sRight.on_changed(update)
+    #     cancan.toggle_slider_vis()
+    #     return cancan
 
     def open_table_wrapper(self):
         popupmsg('Table')
@@ -1910,7 +2033,7 @@ class PageThree(tk.Frame):
         globalMultiplier = 1.0
         logBase = 0
         pdfType = pdfTypeCombobox.get()
-        canvas = self.set_up_new_figure()
+        canvas = set_up_new_figure('PDF')
 
         print(pdfType)
         for refLine in refLines:
@@ -2312,8 +2435,122 @@ class PageThree(tk.Frame):
             wasPlotted = False
             return
 
+def plotWeibull():
+    global dataMultiplier
+    global globalMultiplier
+    global logBase
+    global refLines
+    global listOfRefLines
+    global textBoxes
+    global fig_dict
+    globalMultiplier = 1.0
+    logBase = 0
+    set_up_new_figure(sessionType)
+    for refLine in refLines:
+        refLine.remove()
+    for entryBox in listOfRefLines:
+        entryBox.destroy()
+    for txt in textBoxes:
+        txt.remove()
+    listOfRefLines = []
+    refLines = []
+    # fig_dict[fig]['dictOfAxes'][axes]['refLines'] = []
+
+    textBoxes = []
+    if sessionType == 'Reliability':
+        weibullPPF()
+
+def set_up_new_figure(typeString):
+    global axRight
+    global axLeft
+    global sRight
+    global sLeft
+    global a
+    global fig
+    global cursor
+    global cancan
+    global fig_dict
+    global xAreaPoints
+    global yAreaPoints
+    global globalNPerBin
+    global globalBins
+    global fillBetFigure
+    global fillAxis
+    global totalArea
+    global dataFile
+    global globalMin
+    global globalMax
+    global globalMu
+    global globalSigma
+    global globalMultiplier
+    global canContainer
+    global sessionType
+    global relaWidgs
+    try: 
+        cancan.get_tk_widget().destroy()
+        cancan = None
+    except:
+        pass    
+    # fig = None
+    fig = Figure(dpi = 100)
+    fig.subplots_adjust(bottom = 0.25, right = .85, top = .85)
+    fig.subplots_adjust(wspace=.3, hspace=.35)
+    fig.patch.set_facecolor('#E0E0E0')
+    fig.patch.set_alpha(0.7)
+    sessionType = typeString
+    if typeString == 'Reliability':
+        fig.add_subplot(221)
+        fig.add_subplot(222)
+        fig.add_subplot(223)
+        fig.add_subplot(224)
+        for widg in 
+        for widg in relaWidgs:
+            widg.grid()
+            tmpHiddenWidgs += [widg]
+        for widg in shownWidgs:
+            widg.grid_remove()
+            tmpShownWidgs += [widg]
+        hiddenWidgs = tmpHiddenWidgs
+        shownWidgs = tmpShownWidgs
+        B1.config(command = plotAllRefLines)
+
+    elif typeString == 'PDF':
+        a = fig.add_subplot(111)
+        a2 = a.twinx()
+
+    # cursorChange_id = canvas.mpl_connect('axes_enter_event', on_graph_hover)
+    # canContainer.bind('<Button-3>', on_press_area)
+    # axes2.plot(data)
+    cancan = FancyFigureCanvas(fig, canContainer)
+    can = cancan.get_tk_widget()
+    can.grid(row=0, column=0, sticky = "nsew", pady = 5, padx = 5, ipadx = 5, ipady = 5)
+    cancan._tkcanvas.grid(row=0, column=0, columnspan = 4, rowspan = 1, sticky = "nsew",ipadx = 5, ipady = 5)
+    connection_id = cancan.mpl_connect('button_press_event', on_press) #uncomment
+    cancan.axpopup.entryconfig(1, state='disabled')
+    cancan.addable_menu.entryconfig(0, state = 'disabled')
+
+    # if a.get_visible() and a2.get_visible():
+    #     cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
+
+    # TODO figure out if to use separate sliders or to make new AxLeft, AxRight for each new figure created.
+    with plt.style.context('classic'):
+        axLeft = fig.add_axes([0.15, 0.08, 0.67, 0.03], facecolor=axcolor)
+        axRight = fig.add_axes([0.15, 0.05, 0.67, 0.03], facecolor='#8B0000')
+        sLeft = Slider(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
+        sRight = Slider(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
+        axLeft.clear()
+        axRight.clear()
+        axRight.grid(False)
+        axLeft.set_xticks([])
+        axLeft.set_yticks([])
+        axRight.set_yticks([])
+    sLeft.on_changed(update)
+    sRight.on_changed(update)
+    cancan.toggle_slider_vis()
+    return cancan
+
 # TODO FIX 
-def weibullPPF(canvas):
+def weibullPPF():
     global a
     global a2
     global fig
@@ -2353,8 +2590,6 @@ def weibullPPF(canvas):
     # fig2.add_axes(axRight)
 
 
-
-
     # TODO TODO TODO
     fig_dict[fig] = {}
     fig_dict[fig]['fig_next'] = None
@@ -2363,7 +2598,7 @@ def weibullPPF(canvas):
     fig_dict[fig]['csv_src'] = dataFile
     fig_dict[fig]['slider_axes'] = [axLeft, axRight]
     fig_dict[fig]['dictOfAxes'] = {}
-      
+    fig_dict[fig]['loaded'] = False
 
 
     # # fig_dict[fig]['dictOfAxes'][a3] = {}
@@ -2405,7 +2640,7 @@ def weibullPPF(canvas):
     # x = (5,16,16,17,28,30,39,39,43,45,51,53,58,61,66,68,68,72,72,77,78,80,81,90,96,100,109,110,131,153,165,180,186,188,207,219,265,285,285,308,334,340,342,370,397,445,482,515,545,583,596,630,670,675,733,841,852,915,941,979,995,1032,1141,1321,1386,1407,1571,1586,1799)
     x = (1037,1429,680,291,1577,90,1090,142,1297,1113,1153,150,837,890,269,468,1476,827,519,1100,1307,1360,919,373,563,978,650,362,383,272)
     # x = (0,1,4,7,10,6,14,18,5,12,23,10,3,3,7,3,26,1,2,25,29,29,29,28,2,3,12,32,34,36,29,37,9,16,41,3,6,3,9,18,49,35,17,3,59,2,5,2,1,1,5,9,10,13,3,1,18,17,2,17,22,25,25,25,6,6,2,26,38,22,4,24,41,41,1,44,2,45,2,46,49,50,4,54,38,59)
-    x = (69,64,38,63,65,49,69,68,43,70,81,63,63,52,48,61,42,35,63,56,55,67,63,65,46,53,69,68,43,55,42,64,65,65,55,66,60,67,53,62,67,72,48,68,67,61,60,62,38,50,63,64,43,34,66,62,52,47,63,68,45,41,66,62,60,66,38,53,37,54,60,48,52,70,50,62,65,58,62,64,63,58,64,52,35,63,70,51,40,69,36,71,62,60,44,54,66,49,72,68,62,71,70,61,71,59,67,60,69,57,39,62,50,43,70,66,61,81,58,63,60,62,42,69,63,45,68,39,66,63,49,64,65,64,67,65,37)
+    # x = (69,64,38,63,65,49,69,68,43,70,81,63,63,52,48,61,42,35,63,56,55,67,63,65,46,53,69,68,43,55,42,64,65,65,55,66,60,67,53,62,67,72,48,68,67,61,60,62,38,50,63,64,43,34,66,62,52,47,63,68,45,41,66,62,60,66,38,53,37,54,60,48,52,70,50,62,65,58,62,64,63,58,64,52,35,63,70,51,40,69,36,71,62,60,44,54,66,49,72,68,62,71,70,61,71,59,67,60,69,57,39,62,50,43,70,66,61,81,58,63,60,62,42,69,63,45,68,39,66,63,49,64,65,64,67,65,37)
     # x = (16, 17, 16, 18, 19, 17, 34, 53, 75, 93, 120)
     p0, p1, p2 = ss.weibull_min.fit(x, floc=0)
     sortedX = sorted(x)
@@ -2480,6 +2715,14 @@ def weibullPPF(canvas):
     print 'CorrCoff ' + str(corrCoef)
     cancan.draw()
 
+def reliabilityPriming():
+    global fig
+    global axLeft
+    global axRight
+    global cursor
+    global cursors
+    global cancan    
+    
 
 def pdfPriming(canvas):
     global fig
