@@ -207,11 +207,7 @@ def saveFile():
                             print line.get_label()
                             xPoints, yPoints = excel_plottable_prob_plot(line.get_xdata(), line.get_ydata(), str(line.get_label()))
                         print type(xPoints)
-                        str(topAxis.get_xlabel())
-                        str(topAxis.get_ylabel())
-                        data_order += [str(topAxis.get_xlabel()) + ':' + , str(topAxis.get_ylabel())]
-
-                        data_order += [str(line.get_label()) + ' x Values : ' + str(topAxis.get_xlabel()), str(line.get_label()) + ' y Values : ' +  str(topAxis.get_ylabel())]
+                        data_order += [str(topAxis.get_title()) + ':' + str(topAxis.get_xlabel()) + ':' + str(line.get_label()), str(topAxis.get_title()) + ':' +  str(topAxis.get_ylabel()) + ':' + str(line.get_label())]
                         all_data += [xPoints, yPoints]
                     else: 
                         continue
@@ -2913,6 +2909,10 @@ def weibullPPF(distType):
         for xElem in xSpanDistribution:
             y = y + [np.reciprocal(sigma * math.sqrt(2 * np.pi))
                 * np.reciprocal(np.exp(0.5 * ((xElem - mu) / (sigma)) ** 2))]
+        fillAxis = ax1
+        xAreaPoints = xSpanDistribution
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpanDistribution, 0, y, facecolor = '#4B0082', alpha = 0)
 
         ax1.plot(xSpanDistribution, y, 
             label = 'normal distribution', 
@@ -2920,7 +2920,7 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('Normal Distribution', y =1.04,  fontname="Arial")
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
 
 
@@ -2936,7 +2936,7 @@ def weibullPPF(distType):
         ax2.grid(True, which = 'both')
 
         ax2.set_title('Normal Probability Plot', y =1.04,  fontname="Arial")
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
         ax2.set_ylabel("Unreliability F(t)")
 
 
@@ -2964,7 +2964,7 @@ def weibullPPF(distType):
             label = 'normal reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -2973,7 +2973,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         ax4.set_ylim(0, max(ax4.get_ylim()))
 
@@ -2993,9 +2993,15 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('St Weibull Distribution', y =1.04,  fontname="Arial")
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
+        fillAxis = ax1
 
+        xAreaPoints = xSpan
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpan, 0, y, facecolor = '#4B0082', alpha = 0)
+
+        unrelValuesFullNew = ss.weibull_min.cdf(xSpan, shape, loc, scale)
         ax2.plot(sortedX, medianRanks, 'ob', 
             markersize = 2.3, 
             label = 'weibull probability plot scatter')
@@ -3008,13 +3014,17 @@ def weibullPPF(distType):
         ax2.set_axisbelow(True)
         ax2.grid(True, which = 'both')
         ax2.set_title('St Weibull Probability Plot', y =1.04,  fontname="Arial", fontsize=12)
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
+        if max(unrelValuesFullNew) < 0.99:
+            ax2.set_ylim(min(medianRanks), max(unrelValuesFullNew))
+        else:
+            ax2.set_ylim(min(medianRanks), 0.99)
 
         ax3.plot(xSpan, [np.exp(-1*((xi/scale)**shape)) for xi in xSpan], 
             label = 'weibull reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -3023,7 +3033,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         ax4.set_ylim(0, max(ax4.get_ylim()))
 
@@ -3051,8 +3061,13 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('Lognormal Distribution', y =1.04,  fontname="Arial")
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
+        fillAxis = ax1
+
+        xAreaPoints = xSpan
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpan, 0, y, facecolor = '#4B0082', alpha = 0)
 
         ax2.plot(sortedX, medianRanks, 'ob', 
             markersize = 2.3, 
@@ -3064,14 +3079,14 @@ def weibullPPF(distType):
         ax2.set_xscale('linear')  
         ax2.set_yscale('lognormal', subplot = ax2)
         if max(cdf_y) < 0.99:
-            ax2.set_ylim(min(cdf_y), max(cdf_y))
+            ax2.set_ylim(min(medianRanks), max(cdf_y))
         else:
-            ax2.set_ylim(min(cdf_y), 0.99)
+            ax2.set_ylim(min(medianRanks), 0.99)
 
         ax2.set_axisbelow(True)
         ax2.grid(True, which = 'both')
         ax2.set_title('Lognormal Probability Plot', y =1.04,  fontname="Arial", fontsize=12)
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
 
 
         survival_y = []
@@ -3092,7 +3107,7 @@ def weibullPPF(distType):
             label = 'normal reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         # ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -3101,7 +3116,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         # ax4.set_ylim(0, max(ax4.get_ylim()))
 
@@ -3127,8 +3142,13 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('Exponential Distribution', y =1.04,  fontname="Arial")
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
+        fillAxis = ax1
+
+        xAreaPoints = xSpan
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpan, 0, y, facecolor = '#4B0082', alpha = 0)
 
         ax2.plot(sortedX, rel_estimates, 'ob', 
             markersize = 2.3, 
@@ -3142,18 +3162,18 @@ def weibullPPF(distType):
         ax2.set_axisbelow(True)
         ax2.grid(True, which = 'both')
         ax2.set_title('St Exponential Probability Plot', y =1.04,  fontname="Arial", fontsize=12)
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
         if max(cdf_y) < 0.99:
-            ax2.set_ylim(min(cdf_y), max(cdf_y))
+            ax2.set_ylim(min(rel_estimates), max(cdf_y))
         else:
-            ax2.set_ylim(min(cdf_y), 0.99)
+            ax2.set_ylim(min(rel_estimates), 0.99)
 
         print p0, p1
         ax3.plot(xSpan, [val for val in cdf_y], 
             label = 'exponential reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         # ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -3162,7 +3182,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         # ax4.set_ylim(0, max(ax4.get_ylim()))
 
@@ -3176,8 +3196,8 @@ def weibullPPF(distType):
         print(p0, p1, p2)
         mn = min(sortedX)
         mx = max(sortedX)
-        xSpan = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
-        xSpanDistribution = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
+        xSpan = np.linspace(0.0001, 1.5*mx, 300 + 5 * int(math.sqrt(mx - mn)))
+        xSpanDistribution = np.linspace(0.0001, 1.5*mx, 300 + 5 * int(math.sqrt(mx - mn)))
 
         y = ss.weibull_min.pdf(xSpanDistribution, p0, p1, p2)
 
@@ -3187,9 +3207,13 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('Weibull Distribution', y =1.04,  fontname="Arial")
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
+        fillAxis = ax1
 
+        xAreaPoints = xSpanDistribution
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpanDistribution, 0, y, facecolor = '#4B0082', alpha = 0)
 
         xAxis_shiftedByLoc = [sortedXi - p1 for sortedXi in sortedX]
         xAxis_shiftedByLoc_Max = max(xAxis_shiftedByLoc)
@@ -3210,7 +3234,7 @@ def weibullPPF(distType):
         ax2.set_axisbelow(True)
         ax2.grid(True, which = 'both')
         ax2.set_title('Weibull Probability Plot', y =1.04,  fontname="Arial", fontsize=12)
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
         ax2.set_ylabel("Unreliability F(t)")
         if max(unrelValuesFullNew) < 0.99:
             ax2.set_ylim(min(unrelValuesFullNew), max(unrelValuesFullNew))
@@ -3225,7 +3249,7 @@ def weibullPPF(distType):
             label = 'weibull reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -3234,7 +3258,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         ax4.set_ylim(0, max(ax4.get_ylim()))
 
@@ -3242,8 +3266,8 @@ def weibullPPF(distType):
         p0, p1, p2 = ss.weibull_min.fit(x, floc = 0)
         mn = min(sortedX)
         mx = max(sortedX)
-        xSpan = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
-        xSpanDistribution = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
+        xSpan = np.linspace(0.0001, mx*1.5, 300 + 5 * int(math.sqrt(mx - mn)))
+        xSpanDistribution = np.linspace(0.0001, mx*1.5, 300 + 5 * int(math.sqrt(mx - mn)))
 
         y = ss.weibull_min.pdf(xSpanDistribution, p0, p1, p2)
 
@@ -3253,8 +3277,13 @@ def weibullPPF(distType):
             color = '#8B0000')
         ax1.set_ylim(0, 1.5 * (max(y)))
         ax1.set_title('Weibull Distribution', y =1.04,  fontname="Arial", fontsize=12)
-        ax1.set_xlabel("Time, (t)")
+        ax1.set_xlabel("Time (t)")
         ax1.set_ylabel("f(t)")
+        fillAxis = ax1
+
+        xAreaPoints = xSpanDistribution
+        yAreaPoints = y
+        fillBetFigure = ax1.fill_between(xSpanDistribution, 0, y, facecolor = '#4B0082', alpha = 0)
 
         print (p0,p1,p2)
 
@@ -3274,12 +3303,12 @@ def weibullPPF(distType):
         ax2.set_axisbelow(True)
         ax2.grid(True, which = 'both')
         ax2.set_title('Weibull Probability Plot', y =1.04,  fontname="Arial", fontsize=12)
-        ax2.set_xlabel("Time, (t)")
+        ax2.set_xlabel("Time (t)")
         ax2.set_ylabel("Unreliability F(t)")
         if max(unrelValuesFull) < 0.99:
-            ax2.set_ylim(min(unrelValuesFull), max(unrelValuesFull))
+            ax2.set_ylim(min(medianRanks), max(unrelValuesFull))
         else:
-            ax2.set_ylim(min(unrelValuesFull), 0.99)
+            ax2.set_ylim(min(medianRanks), 0.99)
 
         # report estimated correlation coefficient
         covar = 0.0
@@ -3314,7 +3343,7 @@ def weibullPPF(distType):
             label = 'weibull reliability (survival) function', 
             color = '#8B0000', lw = 1.0)
         ax3.set_title('Survival Function', y =1.04, fontname="Arial", fontsize=12)
-        ax3.set_xlabel("Time, (t)")
+        ax3.set_xlabel("Time (t)")
         ax3.set_ylabel("Reliability 1-F(t)")
         ax3.set_ylim(0, max(ax3.get_ylim()))
 
@@ -3323,7 +3352,7 @@ def weibullPPF(distType):
             lw = 1.0, 
             color = '#8B0000')
         ax4.set_title('Hazard Function', y =1.04,  fontname="Arial", fontsize=12)
-        ax4.set_xlabel("Time, (t)")
+        ax4.set_xlabel("Time (t)")
         ax4.set_ylabel("Failure Rate (fr/time)")
         ax4.set_ylim(0, max(ax4.get_ylim()))
 
