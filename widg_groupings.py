@@ -62,19 +62,27 @@ class Frame_examples_program():
 
         # - - - - - - - - - - - - - - - - - - - - -
         # Notebook
+
+
+        style = ttk.Style(self.window)
+        style.configure('bottomtab.TNotebook', tabposition='se')
+
         notebook_label = ttk.Label(self.window, text="Notebook")
         notebook_label.grid(row=3, column=2, sticky=tk.W, pady=3)
 
-        frame4 = ttk.Notebook(self.window)
-        frame4.grid(row=4, column=2, sticky=tk.E + tk.W + tk.N + tk.S, padx=30, pady=4)
+        frame4 = ttk.Notebook(self.window,  style='bottomtab.TNotebook')
 
         tab1 = tk.Frame(frame4)
         tab2 = tk.Frame(frame4)
         tab3 = tk.Frame(frame4)
 
-        frame4.add(tab1, text="Tab One", compound=tk.TOP)
-        frame4.add(tab2, text="Tab Two", compound=tk.TOP)
-        frame4.add(tab3, text="Tab Three", compound=tk.TOP)
+        tab1.grid_columnconfigure(0, weight= 1)
+        tab1.grid_rowconfigure(0, weight=1)
+        
+        frame4.add(tab1, text="Tab One", compound=tk.BOTTOM)
+        frame4.add(tab2, text="Tab Two", compound=tk.BOTTOM)
+        frame4.add(tab3, text="Tab Three", compound=tk.BOTTOM)
+        frame4.grid(row=4, column=2, sticky=tk.E + tk.W + tk.N + tk.S, padx=30)
 
         self.create_buttons(tab1, "J", "K", "L")
         self.create_buttons(tab2, "M", "N", "O")
