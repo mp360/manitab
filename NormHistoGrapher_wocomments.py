@@ -202,9 +202,9 @@ def saveFile():
         tkMessageBox.showerror("File In Use", "A file of the same name is currently in use in another program. Close this file and try again.")
         return
 
-    # #(type(fname))    # FOR DEBUGGNING
-    #(fname.name)          # fname is type 'file'
-    # #(str(fname))
+    # print(type(fname))    # FOR DEBUGGNING
+    print(fname.name)          # fname is type 'file'
+    # print(str(fname))
 
     with open(fname.name, 'wb') as csvfile:
 
@@ -226,7 +226,7 @@ def saveFile():
                 # axis_scale = topAxis.get_yscale()
                 # if len(fig_dict[fig]['dictOfAxes'][topAxis]['axesScales']) == 0: 
                 for line in topAxis.get_lines():
-                    #(line)
+                    print(line)
                     if '_' not in line.get_label():
                         xPoints = line.get_xdata()                        
                         yPoints = line.get_ydata()
@@ -1207,7 +1207,7 @@ class MercatorLatitudeScale(mscale.ScaleBase):
             if masked.mask.any():
                 # return ma.log(np.abs(ma.tan(masked) + 1.0 / ma.cos(masked)))
                 # return np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in masked])
-                # #(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
+                # print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
                 #_______________________
 
                 return np.array([np.log(np.log(1/(1-xi))) for xi in masked])
@@ -1215,7 +1215,7 @@ class MercatorLatitudeScale(mscale.ScaleBase):
             else:
                 # return np.log(np.abs(np.tan(a) + 1.0 / np.cos(a)))
                 # return  np.array([np.log(np.log(1/(1- (1-np.exp(-1*((xi/p2)**p0))) ))) for xi in a])
-                # #(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
+                # print(np.array([np.log(np.log(1/(1-xi))) for xi in masked]))
                 return np.array([np.log(np.log(1/(1-xi))) for xi in masked])
 
         def inverted(self):
@@ -1328,10 +1328,10 @@ def sortby(tree, col, descending):
     # if the data to be sorted is numeric change to float
     #data =  change_numeric(data)
     # now sort the data in place
-    #([tree.item(child)['values'] for child in tree.get_children('')])
-    #(data)
+    print([tree.item(child)['values'] for child in tree.get_children('')])
+    print(data)
     data.sort(reverse=descending)
-    #(data)
+    print(data)
     for ix, item in enumerate(data):
         tree.move(item[1], '', ix)
     # switch the heading so it will sort in the opposite direction
@@ -1395,7 +1395,7 @@ class TabFrame(tk.Frame):
         i = 0
 
     # def on_right_click(self, event):
-    #     #("WIPPPEEEE")
+    #     print("WIPPPEEEE")
 
     def on_visibility(self, event):
         global canvasOffsetX
@@ -1407,7 +1407,7 @@ class TabFrame(tk.Frame):
         global fig_dict
         global cancan
 
-        #('in ONVISIBILITY')
+        print('in ONVISIBILITY')
         if programmaticDeletionFlag: return
         
         # if 'tabs' in fig_dict: return
@@ -1425,10 +1425,10 @@ class TabFrame(tk.Frame):
 
                # tab was deleted and not just now opened from disk                       # tab has been changed
             # if (notebookFrame.nametowidget(hiddenGraphsTab).tab_selected_before_this == notebookFrame.index(self)): return
-            try:
-                # notebookFrame.index(self) != notebookFrame.index(canContainer)
-            except:
-                pass 
+            # try:
+            #     # notebookFrame.index(self) != notebookFrame.index(canContainer)
+            # except:
+            #     pass 
                 
             if self.justLoadedFromMem:
                 self.justLoadedFromMem = False
@@ -1447,13 +1447,13 @@ class TabFrame(tk.Frame):
 
 
         else:
-            #(event.x, event.y, event.type)
+            print(event.x, event.y, event.type)
             if self.tab_selected_before_this < len(notebookFrame.tabs()):
-                #('force to stay on same tab')
+                print('force to stay on same tab')
                 notebookFrame.select(self.tab_selected_before_this)
             if cancan:
                 self.hiddenGraphsMenu.tk_popup(app.winfo_x() + 76, app.winfo_y() + int(cancan.get_width_height()[1]) + canvasOffsetY - 19* len(notebookFrame.tabs()) + 19*7, 0)
-        #('over ONVISIBILITY')
+        print('over ONVISIBILITY')
 
     def set_tab_selected_before_this(self, index):
         self.tab_selected_before_this = index
@@ -1468,7 +1468,7 @@ def renameTab(label):
     global graphTitle
     global fig_dict
     global fig
-    #("in RENAME")
+    print("in RENAME")
     if not fig or fig not in fig_dict: return
 
     if len(str(label.strip())) == 0:
@@ -1502,7 +1502,7 @@ def hideExtraTabs(tabID = None):
     global fig_dict
     global fig
 
-    #("in HIDE EXTRA TABS")
+    print("in HIDE EXTRA TABS")
     hiddenGraphsTab = notebookFrame.tabs()[0]
     hiddenGraphsTabShown = 'normal' == notebookFrame.tab(hiddenGraphsTab, 'state') 
 
@@ -1512,20 +1512,20 @@ def hideExtraTabs(tabID = None):
     except:
         numGraphsInHiddenMenu = 0
         pass
-    #(numGraphsInHiddenMenu)
-    #(len(notebookFrame.tabs()))
-    #('gothere',  len(notebookFrame.tabs()) - numGraphsInHiddenMenu)
+    print(numGraphsInHiddenMenu)
+    print(len(notebookFrame.tabs()))
+    print('gothere',  len(notebookFrame.tabs()) - numGraphsInHiddenMenu)
     if len(notebookFrame.tabs()) > 1 and len(notebookFrame.tabs()) - numGraphsInHiddenMenu > 3:
-        #('gothere2: reduce tabs')
+        print('gothere2: reduce tabs')
         if not tabID:
-            #('choosing a random visible tab')
+            print('choosing a random visible tab')
             for i in range(0, len(notebookFrame.tabs())):
                 thisID = notebookFrame.tabs()[i]
                 if 'normal' == notebookFrame.tab(thisID, 'state') and str(thisID) != str(canContainer) and i != 0:
                     tabID = thisID
-                    #('found a tab')
+                    print('found a tab')
                     break
-        #('hiding the tab to menu')
+        print('hiding the tab to menu')
         toHideTabLabel = notebookFrame.tab(tabID, "text")
         notebookFrame.hide(tabID)
         notebookFrame.nametowidget(hiddenGraphsTab).hiddenGraphsMenu.add_command(label=toHideTabLabel,  command = lambda: reopenGraph(toHideTabLabel, tabID, "menu"))
@@ -1533,7 +1533,7 @@ def hideExtraTabs(tabID = None):
         notebookFrame.nametowidget(hiddenGraphsTab).recentlyAdded = tabID
         numGraphsInHiddenMenu += 1
     elif  len(notebookFrame.tabs()) > 1 and numGraphsInHiddenMenu > 0 and len(notebookFrame.tabs()) - numGraphsInHiddenMenu < 3:
-        #('gothere3: increase tabs')
+        print('gothere3: increase tabs')
 
         notebookFrame.nametowidget(hiddenGraphsTab).hiddenGraphsMenu.delete(numGraphsInHiddenMenu - 1)
         numGraphsInHiddenMenu -= 1
@@ -1549,13 +1549,13 @@ def hideExtraTabs(tabID = None):
                 if nextCandLabel == notebookFrame.tab(thisID, "text"):
                     notebookFrame.nametowidget(hiddenGraphsTab).recentlyAdded = thisID
                     break
-            #("recently added was updated")
+            print("recently added was updated")
 
 
     if numGraphsInHiddenMenu == 0 and 'tabs' not in fig_dict:
         notebookFrame.nametowidget(hiddenGraphsTab).recentlyAdded = None
         notebookFrame.hide(notebookFrame.nametowidget(hiddenGraphsTab))
-        #('gothere4')
+        print('gothere4')
 
 
 # reopens a graph specified by tabLabel and tabID.
@@ -1572,7 +1572,7 @@ def reopenGraph(tabLabel, tabID, context = None):
     global graphTitle
     global fig_dict
     global fig
-    #("in REOPEN")
+    print("in REOPEN")
 
 
     for i in range(0, len(notebookFrame.tabs())):
@@ -1610,13 +1610,13 @@ def reopenGraph(tabLabel, tabID, context = None):
         if fig_dict[figkey]['lastSaved'] == lastSavedTimeExpected:
             fig = figkey
             break
-    #if fig in fig_dict: #("fig was obtained :)")
+    #if fig in fig_dict: print("fig was obtained :)")
 
     # # fig_dict[fig]
 
     #TODO INVESTIGATE
     if canContainer != None and fig in fig_dict:
-        #("if this graph came from hidden menu, delete the entry in menu!!")
+        print("if this graph came from hidden menu, delete the entry in menu!!")
         oldCanContainer = canContainer
         canContainer = notebookFrame.nametowidget(tabID)
         openFig(fig)
@@ -1632,7 +1632,7 @@ def reopenGraph(tabLabel, tabID, context = None):
             pass
 
         if menuIndex >= 0:
-            #('case from menu, tab will be removed from menu.')
+            print('case from menu, tab will be removed from menu.')
             notebookFrame.nametowidget(hiddenGraphsTab).hiddenGraphsMenu.delete(menuIndex)
             notebookFrame.add(canContainer)
             notebookFrame.select(notebookFrame.index(canContainer))
@@ -1640,11 +1640,11 @@ def reopenGraph(tabLabel, tabID, context = None):
 
         # hideExtraTabs(oldCanContainer) # if not from menu don't need to call hide
     else:
-        #('graph was forced to open, open graph')
+        print('graph was forced to open, open graph')
         canContainer = notebookFrame.nametowidget(tabID)
         openFig(fig)
 
-    #("over REOPEN")
+    print("over REOPEN")
 
 # saves the current figure.
 # creates a new tab for the new figure.
@@ -1654,7 +1654,7 @@ def addTab(name = 'Blank Chart*', selectedFromMenu = False):
     global current_tabs_dict
     global canContainer
     global graphTitle
-    #("in ADDTAB")
+    print("in ADDTAB")
     
     #first want to save the previous figure...
         # replace the figure into the figdict...
@@ -1677,7 +1677,7 @@ def addTab(name = 'Blank Chart*', selectedFromMenu = False):
     # Do this every time we change tabs... update for when hiddentabsbutton is pressed
     hiddenGraphsTab = notebookFrame.tabs()[0]
     notebookFrame.nametowidget(hiddenGraphsTab).set_tab_selected_before_this(notebookFrame.index(canContainer))
-    #(notebookFrame.nametowidget(hiddenGraphsTab).tab_selected_before_this)
+    print(notebookFrame.nametowidget(hiddenGraphsTab).tab_selected_before_this)
     notebookFrame.hide(notebookFrame.nametowidget(hiddenGraphsTab))
 
     notebookFrame.select(notebookFrame.index(canContainer)) #move focus to new tab << on_visibility is called... but name is not in current_dict yet...
@@ -1716,7 +1716,7 @@ def openFig(newFig = None):
     global cursorState
     global sliderCIDs
 
-    #("in OPEN")
+    print("in OPEN")
 
     try: 
         cancan.get_tk_widget().destroy()
@@ -1828,7 +1828,7 @@ def openFig(newFig = None):
     if not cursorState.get():
         toggleCrossHairs()
 
-    #(axLeft, axRight)
+    print(axLeft, axRight)
     with plt.style.context('classic'):
         sLeft = Slider2(axLeft, 'Time', 0, 1, valinit=1, color = '#00A3E0')
         sRight = Slider2(axRight, 'Time', 0, 1, valinit=0, color = axcolor)
@@ -1852,7 +1852,7 @@ def openFig(newFig = None):
     axLeft.set_visible(axLState)
     axRight.set_visible(axRState)
     cancan.draw()
-    #("over OPEN")
+    print("over OPEN")
     
  # TODO: this function will open any kind of graph session. Will take in a clicked Axis.
 def go_to_next_slide(newFig = None):
@@ -1890,7 +1890,7 @@ def go_to_next_slide(newFig = None):
     global thisWkspcName
     global current_tabs_dict
 
-    #("in OPEN")
+    print("in OPEN")
 
     # data=np.arange(100)  # data to plot
     # pl.dump(fig_dict,file('savedWkspc1.pickle','wb'))
@@ -1930,7 +1930,7 @@ def go_to_next_slide(newFig = None):
     except:
         pass    
 
-    #(fig)
+    print(fig)
     
     dataFile = fig_dict[fig]['csv_src']
     if len(fig_dict[fig]['slider_axes']) == 3:
@@ -2051,7 +2051,7 @@ def go_to_next_slide(newFig = None):
     axLeft.set_visible(axLState)
     axRight.set_visible(axRState)
     cancan.draw()
-    #("over OPEN")
+    print("over OPEN")
     #cursor="")
 
 #___________________________________________________________________________________________________            
@@ -2140,11 +2140,11 @@ class FancyFigureCanvas(FigureCanvasTkAgg, tk.Listbox):
             self.clickedAxes.set_yscale('linear')
             self.clickedAxes.set_xscale('linear')
             self.view_menu.entryconfigure(0, label = 'View with Original Scale')               
-                # #(cancan.popup_multi.index('Scale'))
+                # print(cancan.popup_multi.index('Scale'))
             # self.filemenu2.delete("Stop")
             # cancan.addable_menu.entryconfigure(1, command = cancan.set_graph_title1)
         else:
-            #(fig_dict[fig]['dictOfAxes'][axes]['axesScales'])
+            print(fig_dict[fig]['dictOfAxes'][axes]['axesScales'])
             self.clickedAxes.set_yscale(fig_dict[fig]['dictOfAxes'][axes]['axesScales'][1], subplot = axes)
             self.clickedAxes.set_xscale(fig_dict[fig]['dictOfAxes'][axes]['axesScales'][0]) 
             self.view_menu.entryconfigure(0, label = 'View with Linear Scale')               
@@ -2343,9 +2343,9 @@ def maximize_axes(ax, geometry=(1,1,1)):
 
 
 def on_graph_hover(event):
-    #( event.inaxes)
+    print( event.inaxes)
     cursor = InformativeCursor(event.inaxes, useblit=True, color='red', linewidth=.5)
-    #(cursor)
+    print(cursor)
 
 
 def on_press(event):
@@ -2362,28 +2362,28 @@ def on_press(event):
 
     if event.button != 3: return
     try:
-        #(app.winfo_x(), app.winfo_y())
-        #(cancan.get_width_height())
-        #(event)
-        #(event.inaxes is a)
-        #(event.inaxes is a2)
+        print(app.winfo_x(), app.winfo_y())
+        print(cancan.get_width_height())
+        print(event)
+        print(event.inaxes is a)
+        print(event.inaxes is a2)
         # TODO rectify menu position when a left sidebar is present.
         cancan.clickedAxes = event.inaxes
         # event.inaxes
         cancan.cursorLocation = (event.xdata, event.ydata)
-        #(event.inaxes)
-        #(event.inaxes in fig.get_axes())
+        print(event.inaxes)
+        print(event.inaxes in fig.get_axes())
 
         if axRight.get_visible() and event.inaxes in [axRight, axLeft]:
-            #("UES")
-            #(cancan.axpopup.winfo_height())
+            print("UES")
+            print(cancan.axpopup.winfo_height())
             cancan.axpopup.tk_popup(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY + 82 + 10, 0)
         elif (cancan.clickedAxes != None and
                 event.inaxes != axLeft and event.inaxes != axRight and
                 sessionType in ['RELA']): #there need to be multiple graphs
             # cancan.addable_menu.add_command(label = "Figure Title", command = cancan.set_graph_title1)
             cancan.addable_menu.entryconfigure(1,command = cancan.set_graph_title2)
-            #(cancan.clickedAxes.get_yscale())
+            print(cancan.clickedAxes.get_yscale())
             if fig in fig_dict:
                 if cancan.clickedAxes.get_yscale() in ['mercator', 'normal', 'exponential', 'lognormal'] or 'axesScales' in fig_dict[fig]['dictOfAxes'][cancan.clickedAxes]: # clicked on a scaled axis
                     try: 
@@ -2398,14 +2398,13 @@ def on_press(event):
                         i = None
 
             cancan.popup_multi.tk_popup(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY + 82 + 10, 0)
-            # #(cancan.popup_multi.yposition(2) )
-            #()
-            # #(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY)
+            # print(cancan.popup_multi.yposition(2) )
+            print()
+            # print(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY)
         elif cancan.clickedAxes == None:
             # 'GPTHER'
             cancan.gray_space_menu.tk_popup(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY + 82 + 10, 0)
-        elif cancan.clickedAxes.get_yscale() in ['mercator', 'normal']:
-            # 'hi'
+
         else:
             cancan.addable_menu.entryconfigure(1, command = cancan.set_graph_title1)
             cancan.popup_menu.tk_popup(app.winfo_x() + int(event.x), app.winfo_y() + int(cancan.get_width_height()[1]) - int(event.y) + canvasOffsetY + 82 + 10, 0)
@@ -2482,7 +2481,7 @@ def popupmsg(purpose):
             popup.destroy()
             
         except ValueError, e:
-            #(start)
+            print(start)
             if start == '' or end == '':
                 tkMessageBox.showerror("Missing Limits", "Please enter a float value for cursor A and cursor B.\n")
             else:             
@@ -2531,7 +2530,7 @@ def popupmsg(purpose):
             
 
     def addFigureTitle():
-        #(cancan.clickedAxes)
+        print(cancan.clickedAxes)
         cancan.thisFigure.suptitle(graphTitle.get(), fontsize=18, fontweight='bold', fontname="Calibri")
         renameTab(graphTitle.get())
         cancan.draw_idle()
@@ -2539,7 +2538,7 @@ def popupmsg(purpose):
         return
 
     def addChartTitle():
-        #(cancan.clickedAxes)
+        print(cancan.clickedAxes)
         cancan.clickedAxes.set_title(graphTitle.get(), y =0.99, fontname="Arial")
         cancan.draw_idle()
         popup.destroy()
@@ -2573,7 +2572,7 @@ def popupmsg(purpose):
         popup.destroy()
 
     def prime_nxt_popup(purpose, hiddenWidgs, shownWidgs):
-        #(hiddenWidgs)
+        print(hiddenWidgs)
         tmpHiddenWidgs = []
         tmpShownWidgs = []
 
@@ -2603,7 +2602,7 @@ def popupmsg(purpose):
 
         try:
             for entry in listOfRefLines:
-                #(entry)
+                print(entry)
                 entryGet = entry.get()
                 a = 0.0
                 if entryGet == '': continue
@@ -2621,7 +2620,7 @@ def popupmsg(purpose):
                 else:
                     a = float(entryGet)
 
-                #(a)
+                print(a)
                 if toMarkY.get():
                     if len(yAreaPoints) > 0 and (a > max(cancan.clickedAxes.get_yticks()) or a < 0):
                         # ALERT line not graphed
@@ -2656,7 +2655,7 @@ def popupmsg(purpose):
                         [cancan.clickedAxes.text(max(modTicks), a, str(truncate(a, 3)), style='italic', rotation=0,
                             bbox={'lw':0.0 ,'boxstyle':'round', 'facecolor':'white', 'alpha':0.6, 'pad':0.15})]
 
-                #(refLines)
+                print(refLines)
 
             cancan.draw_idle()
             listOfRefLines = []
@@ -2722,11 +2721,20 @@ def popupmsg(purpose):
             groupHeaders = listbox2.get(0, 'end')
             groupData = []
             popData = []
-            for groupHeader in groupHeaders:
+            sumStats = {}
+            for i, groupHeader in enumerate(groupHeaders):
                 dframe = pd.read_csv(dataFile)
                 dframe = dframe.sort_values(groupHeader)
                 l = dframe[groupHeader].dropna().values.tolist()
                 groupData += [l]
+                stats = dframe[groupHeader].dropna().describe()
+                sumStats[i] = {'mu':  stats.iloc[1],
+                    'variance': stats.iloc[2] ** 2,
+                    'sigma': stats.iloc[2],
+                    'mn': stats.iloc[3],
+                    'mx': stats.iloc[7],
+                    'header': str(groupHeader)
+                }
                 popData += l
  
             if not limitToN:
@@ -2775,13 +2783,13 @@ def popupmsg(purpose):
             pValue = 1 - ss.f.cdf(fStat, dfn = dfCol, dfd = dfErr)
 
 
-            #('     ss, df, MS, F, p-value, F-crit')
-            #('b/w groups')
-            #('within groups')
-            #('Total')
+            print('     ss, df, MS, F, p-value, F-crit')
+            print('b/w groups')
+            print('within groups')
+            print('Total')
             anovaStats = (msc, mse, fStat, fCritical, pValue, dfCol, dfErr, dfTot, minColLength, len(groupHeaders))
 
-            plotAnova(groupData, anovaStats, tuple())
+            plotAnova(groupData, anovaStats, sumStats) 
             # # groupData
     def app_close():
         popup.destroy()
@@ -2794,7 +2802,7 @@ def popupmsg(purpose):
 
 
     popup = Toplevel()
-    #(popup)
+    print(popup)
     frame = ttk.Frame(popup, width=300, height=100)
     frame.grid( row=0, column=0, sticky="ew", pady=5, padx=5)
 
@@ -2842,13 +2850,95 @@ def popupmsg(purpose):
         B2.grid(row=15, column=2,  sticky="ew", pady=10, padx=5)
     elif purpose == 'ANOVA1':
 
-        titleLabel = ttk.Label(frame, text = "Sorry! This feature is not supported yet.", font = SMALL_FONT)
+        # titleLabel = ttk.Label(frame, text = "Sorry! This feature is not supported yet.", font = SMALL_FONT)
+        # titleLabel.grid(sticky = "nw", row=0, column= 1, pady = 8, padx = 8)
+
+        # B1 =  ttk.Button(popup, text="Okay")
+        # B1 = ttk.Button(popup, text="Okay", command = lambda: popup.destroy())
+        # B1.grid(row=15, column=3,  sticky="ew", pady=5, padx=5)
+
+        treeFrame = ttk.Frame(frame, width = 300, height = 400)
+        treeFrame.grid(row=4, column=0, columnspan = 9, rowspan=9, padx=10, pady=3)
+        # treeFrame.columnconfigure(0,weight=1)
+
+        titleLabel = ttk.Label(treeFrame, text = "One-Way ANOVA", font = LARGE_FONT)
         titleLabel.grid(sticky = "nw", row=0, column= 1, pady = 8, padx = 8)
 
-        B1 =  ttk.Button(popup, text="Okay")
-        B1 = ttk.Button(popup, text="Okay", command = lambda: popup.destroy())
-        B1.grid(row=15, column=3,  sticky="ew", pady=5, padx=5)
+        importButton =  ttk.Button(treeFrame, text="Import Data", command = openFile)
+        # importButton = ttk.Button(frame, text="Okay", command = prime_nxt_popup(purpose))
+        importButton.grid(row=0, column=2, columnspan = 2, sticky="e", pady=5, padx=15)
+        # importButton.config(command = lambda: prime_nxt_popup(purpose, hiddenWidgs, shownWidgs))
 
+        groupTitle = ttk.Label(treeFrame, text = "Column Headers", font = MED_FONT)
+        groupTitle.grid(sticky = "nw", row=3, column= 1, padx = 10)
+        listbox1 = tk.Listbox(treeFrame, listvariable = headerDropDownVar, selectmode = "multiple")
+        listbox1.grid(row=4, column = 1, sticky='ew', rowspan=9, padx=10, pady=5)        
+
+        groupTitle2 = ttk.Label(treeFrame, text = "Groups", font = MED_FONT)
+        groupTitle2.grid(sticky = "nw", row=3, column= 3, padx = 10)
+        listbox2 = tk.Listbox(treeFrame, selectmode = "multiple")
+        listbox2.grid(row=4, column = 3, sticky='ew', rowspan=9, padx=10, pady=5)
+
+        addButton =  ttk.Button(treeFrame, text="Add >>", command = lambda: moveToListBox(listbox1, listbox2))
+        # importButton = ttk.Button(frame, text="Okay", command = prime_nxt_popup(purpose))
+        addButton.grid(row=5, column=2,  sticky="w", pady=5, padx=5)
+        removeButton =  ttk.Button(treeFrame, text="<< Remove", command = lambda: moveToListBox(listbox2, listbox1))
+        # importButton = ttk.Button(frame, text="Okay", command = prime_nxt_popup(purpose))
+        removeButton.grid(row=6, column=2,  sticky="w", pady=5, padx=5)
+
+        operationsFrame = ttk.Frame(frame, width = 300, height = 400)
+        operationsFrame.grid(row=14, column=0, padx=10, pady=3)
+        operationsFrame.columnconfigure(0,weight=1)
+
+        myType = StringVar()
+        typeLabel = ttk.Label(operationsFrame, text = "Data Type:", font = SMALL_FONT)
+        typeLabel.grid(sticky = "w", row=14, column= 1, padx = 10, pady = 3)
+        cmbBox2 = ttk.Combobox(operationsFrame, state="readonly",
+            values=("Number", "Date (mm/dd/yyyy)", "Percent"), textvariable = myType)
+        cmbBox2.grid(row=14, column=2, sticky = "ew")
+        cmbBox2.current(0)
+
+        alphaVar = StringVar()
+        alphaVar.set(str(0.05))
+        alphaLabel = ttk.Label(operationsFrame, text = "Alpha:", font = SMALL_FONT)
+        alphaLabel.grid(sticky = "w", row=15, column= 1, padx = 10, pady = 3)
+        locEntry = ttk.Entry(operationsFrame, textvariable = alphaVar)
+        locEntry.grid(row=15, column=2, sticky="ew")
+
+        markLimit = IntVar()
+        markLimit.set(0)
+        chkMarkLimit = ttk.Checkbutton(operationsFrame, text='Limit to N Observations', variable=markLimit, command = lambda: toggle_access(purpose + ' Limit to N Observations'))
+        chkMarkLimit.grid( row=16, column=1, columnspan = 2, sticky="w", pady=3, padx=10)
+
+        limitToNVar = StringVar()
+        limitToNVar.set('--') 
+        limitToNEntry = ttk.Entry(operationsFrame, textvariable = limitToNVar)
+        limitToNEntry.grid(row=17, column=1, columnspan = 2, sticky="e")
+        limitToNEntry.grid_forget()
+
+        B1 =  ttk.Button(popup, text="Okay")
+        B1 = ttk.Button(popup, text="Okay", command = lambda: process_anova_input(purpose))
+        B1.grid(row=15, column=3,  sticky="ew", pady=5, padx=5)
+        # B1.config(command = lambda: prime_nxt_popup(purpose, hiddenWidgs, shownWidgs))
+        # B1.config(state = 'disabled')
+
+        # tree2 = MultiColumnListbox(['                                          '], tuple(), treeFrame, mode = 'single_column', colnum = 1)
+
+        #         container1 = self.parent
+        # container = ttk.Frame(container1)
+        # # create a treeview with dual scrollbars
+        # B1 = ttk.Button(container, text="Okay", command=self.dostuff)
+        # B1.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
+        # self.tree = ttk.Treeview(container1, columns=self.headers, show="headings")
+        # vsb = ttk.Scrollbar(container1, orient="vertical", command=self.tree.yview)
+        # hsb = ttk.Scrollbar(container1, orient="horizontal", command=self.tree.xview)
+        # self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        # self.tree.grid(column=0, row=0, sticky='nsew', in_=container1)
+        # vsb.grid(column=1, row=0, sticky='ns', in_=container1)
+        # hsb.grid(column=0, row=1, sticky='ew', in_=container1)
+
+        # container.grid_columnconfigure(0, weight=1)
+        # container.grid_rowconfigure(0, weight=1)
         
     if purpose == 'Add Reference Line 1':
         toMarkX = IntVar()
@@ -3101,7 +3191,7 @@ def saveWorkspace(context = None):
     # axes = self.clickedAxes
     # if len(fig_dict[fig]['dictOfAxes'][axes]['axesScales']) == 0: 
     #     fig_dict[fig]['dictOfAxes'][axes]['axesScales'] = (axes.get_xscale(), axes.get_yscale())
-    #("in SAVEWKSPC")
+    print("in SAVEWKSPC")
     #cursor="wait")
     #)
 
@@ -3147,7 +3237,7 @@ def saveWorkspace(context = None):
         if restoredOrigName in current_tabs_dict:
             current_tabs_dict[restoredOrigName][index] = key
     # loaded_fig_dict = None
-    #("over SAVEWKSPC")
+    print("over SAVEWKSPC")
     #cursor="")
 
     return
@@ -3318,7 +3408,7 @@ def openWorkspace():
     global current_tabs_dict
     global openWorkspaceFlag
 
-    #("in MEGA OPEN")
+    print("in MEGA OPEN")
 
     # TODO popup save your work before continuing?
 
@@ -3373,7 +3463,7 @@ def openWorkspace():
                 addTab(name = str(tabName))
                 hideExtraTabs()
 
-        #('addingTab')
+        print('addingTab')
     hideExtraTabs()
 
     if 'tabs' in fig_dict:
@@ -3385,7 +3475,7 @@ def openWorkspace():
     notebookFrame.select(hiddenTabsButton)
     hideExtraTabs()
 
-    #('successful open')
+    print('successful open')
 
 
 def init_stats_table():
@@ -3466,7 +3556,7 @@ class PageThree(tk.Frame):
         styleTabs.configure('bottomtab.TNotebook', tabposition='sw')
         styleTabs.configure('TNotebook.Tab', font=MED_FONT, padding=[5, 1], expand=[0,0,0,0])
         styleTabs.map("TNotebook.Tab", foreground=[("selected", "#8B0000")])
-        #(styleTabs)
+        print(styleTabs)
 
 
 
@@ -3499,7 +3589,7 @@ class PageThree(tk.Frame):
         # canContainer = tk.Frame(notebookFrame, width=200, height=200)
 
         notebookFrame = ttk.Notebook(self, style='bottomtab.TNotebook')
-
+        notebookFrame.grid_propagate(False)
 
         newContainer = TabFrame(master=notebookFrame, name ="Chart", width=200, height=200)
 
@@ -3507,7 +3597,7 @@ class PageThree(tk.Frame):
         newContainer.grid_rowconfigure(0, weight = 1)
         newContainer.grid_columnconfigure(0, weight = 1)
         notebookFrame.hide(newContainer)
-        #(newContainer)
+        print(newContainer)
         notebookFrame.bind('<Button-3>', self.on_tab_right_click)    
 
         canContainer = TabFrame(master=notebookFrame, name ="Chart", width=200, height=200)
@@ -3721,9 +3811,9 @@ class PageThree(tk.Frame):
         height=toolbarContainer.winfo_reqheight()
 
         canvasOffsetY = height
-        #(height)
+        print(height)
         # canvasOffsetX = width
-        # #(width, height)
+        # print(width, height)
         self.toolbarContainer = toolbarContainer
         self.buttContainer = buttContainer
         buttContainer = self.buttContainer
@@ -3736,15 +3826,15 @@ class PageThree(tk.Frame):
 
     def on_tab_right_click(self, event):
         global notebookFrame
-        #('widget:', event.widget)
-        #('x:', event.x)
-        #('y:', event.y)
+        print('widget:', event.widget)
+        print('x:', event.x)
+        print('y:', event.y)
 
         #selected = nb.identify(event.x, event.y)
-        ##('selected:', selected) # it's not usefull
+        #print('selected:', selected) # it's not usefull
 
         clicked_tab_index = notebookFrame.tk.call(notebookFrame._w, "identify", "tab", event.x, event.y)
-        #('clicked tab:', clicked_tab_index)
+        print('clicked tab:', clicked_tab_index)
         
         if clicked_tab_index <= 0: return
 
@@ -3755,7 +3845,7 @@ class PageThree(tk.Frame):
         # tabRightClickMenu.tk_popup(app.winfo_x() + 76, app.winfo_y() + int(cancan.get_width_height()[1]) + canvasOffsetY - 19* len(notebookFrame.tabs()) + 19*7, 0)
 
         # active_tab = notebookFrame.index(notebookFrame.select())
-        # #(' active tab:', active_tab)
+        # print(' active tab:', active_tab)
 
         # if clicked_tab == active_tab:
         #     notebookFrame.forget(clicked_tab)
@@ -3769,7 +3859,7 @@ def deleteTab(tabIndex):
     global fig
     global fig_dict
 
-    #("in DELETE")
+    print("in DELETE")
     #cursor="wait")
     #)
 
@@ -3781,18 +3871,18 @@ def deleteTab(tabIndex):
         notebookFrame.forget(tabIndex)
         hideExtraTabs()
 
-        #(len(notebookFrame.tabs()))
+        print(len(notebookFrame.tabs()))
         if len(notebookFrame.tabs()) == 1:
             oldSessionType = sessionType
             sessionType = None
             pre_plot_setup(oldSessionType, None)
-            #("a blank plot is set up post delete all graphs")
+            print("a blank plot is set up post delete all graphs")
 
-    #("over DELETE")
+    print("over DELETE")
     #cursor="")
 
     # notebookFrame.nametowidget(hiddenGraphsTab).set_tab_selected_before_this(notebookFrame.index(canContainer))
-    # #(notebookFrame.nametowidget(hiddenGraphsTab).tab_selected_before_this)
+    # print(notebookFrame.nametowidget(hiddenGraphsTab).tab_selected_before_this)
     # notebookFrame.hide(notebookFrame.nametowidget(hiddenGraphsTab))
 
     # notebookFrame.select(notebookFrame.index(canContainer))
@@ -3808,11 +3898,11 @@ def deleteGraph(thisID = None, thisLabel = None):
     global sLeft
     global sRight
 
-    #("in DELETE GRAPH")
+    print("in DELETE GRAPH")
 
     if not thisID and not thisLabel: return
-    #(canContainer)
-    #(thisID)
+    print(canContainer)
+    print(thisID)
     # loaded_fig_dict = None
     # with open('savedWkspc1.pickle', 'rb') as handle:
     #     loaded_fig_dict = pl.load(handle)
@@ -3823,9 +3913,9 @@ def deleteGraph(thisID = None, thisLabel = None):
 
     timestamp = None
     if thisLabel != None:
-        #("CASE 11")
+        print("CASE 11")
         if thisLabel in current_tabs_dict:
-            #("CASE 111")
+            print("CASE 111")
             restoredOrigName = thisLabel
             timestamp = current_tabs_dict[restoredOrigName][0]
 
@@ -3840,7 +3930,7 @@ def deleteGraph(thisID = None, thisLabel = None):
             current_tabs_dict[restoredOrigName][0] = None
 
         else:
-            #("CASE 1111")
+            print("CASE 1111")
             splitLabel1 = thisLabel.split('(')
             splitLabel2 = splitLabel1[-1].split(')')
             if len(splitLabel2) != 2: return
@@ -3864,7 +3954,7 @@ def deleteGraph(thisID = None, thisLabel = None):
 
 
     if canContainer != None and str(canContainer) == str(thisID):
-        #("CASE 1")
+        print("CASE 1")
         # if fig in fig_dict and fig_dict[fig]['loaded']:
         #     for figkey in fig_dict.keys():
         #         if fig_dict[figkey]['lastSaved'] == fig_dict[fig]['lastSaved']:
@@ -3873,7 +3963,7 @@ def deleteGraph(thisID = None, thisLabel = None):
         if fig in fig_dict:
             sLeft.disconnect_events()
             sRight.disconnect_events()
-            #("figure was deleted")
+            print("figure was deleted")
             del fig_dict[fig]
         canContainer = None
 
@@ -3883,9 +3973,9 @@ def deleteGraph(thisID = None, thisLabel = None):
         for figkey in fig_dict.keys():
             if fig_dict[figkey]['lastSaved'] == timestamp:
                 del fig_dict[figkey]
-                #("figure was deleted")
+                print("figure was deleted")
 
-    #("over DELETE GRAPH")
+    print("over DELETE GRAPH")
 
     
 
@@ -3900,7 +3990,12 @@ def toggleCrossHairs():
         cursor.horizOn = not cursor.horizOn
         cursor.vertOn = not cursor.vertOn
 
-def plotAnova(data, anovaStats, summaryStats):
+def random_color():
+    levels = np.linspace(.08, .8, 10)
+    toReturn =  tuple(np.random.choice(levels) for _ in range(3))
+    print toReturn
+    return toReturn
+def plotAnova(data, anovaStats, sumStats):
     global sessionType
     global graphTitle
     global fig
@@ -3909,7 +4004,7 @@ def plotAnova(data, anovaStats, summaryStats):
     global a
     global globalSigVar
     global statTableTxt
-    #('got here')
+    print('got here')
 
     # fig_dict[fig]['dictOfAxes'][axes]['refLines'] = []
     try:
@@ -3921,7 +4016,65 @@ def plotAnova(data, anovaStats, summaryStats):
 
                 fig.subplots_adjust(wspace=.25, hspace=.35, left=0.12, right=0.78, top=0.88, bottom=0.12)
                 a = fig.add_subplot(111, label = 'boxplot')
-                a.boxplot(data, vert = True, showfliers = False)
+                a1 = a.twinx().twiny()
+                largestMax = 0.0
+                for i in range(len(data)):
+                    mx = sumStats[i]['mx']
+                    if mx > largestMax:
+                        largestMax = mx
+
+                smallestMax = largestMax
+                for i in range(len(data)):
+                    mx = sumStats[i]['mx']
+                    if mx < smallestMax:
+                        smallestMax = mx
+
+                pdfWithMinRange = 0
+                minRange = largestMax
+                for i in range(len(data)):
+                    mx = sumStats[i]['mx']
+                    mn = sumStats[i]['mn']
+                    if mx - mn < minRange:
+                        pdfWithMinRange = i
+                        minRange = mx -mn
+                # ____
+
+                # ____
+
+                largestYMax = 0.0
+                prevAxes = a
+                graphColors = []
+                for i, column in enumerate(data):
+                    mu = sumStats[i]['mu']
+                    mx = sumStats[i]['mx']
+                    mn = sumStats[i]['mn']
+                    sigma = sumStats[i]['sigma']
+                    if not mx - mn:
+                        mx = (mx + 1) / (mx + 100)**3
+                    thisRange = mx - mn
+
+                    mxNorm = (mx - mn)/thisRange
+                    mnNorm = (mn - mn)/thisRange
+                    x = np.linspace(-1.5*(mxNorm), (mxNorm )*1.5, 300 + 5 * int(math.sqrt((mxNorm)*1.5 - (-1.5*(mxNorm )) )))
+                    p0, p1 = ss.logistic.fit([(val - mn)/(thisRange) for val in column], floc=(mu -mn)/thisRange)
+                    print(x)
+                    print(p0, p1)
+                    y = ss.logistic.pdf(x, p0, p1)
+                    # a1 = prevAxes.twinx().twiny()
+                    newColor = random_color()
+                    nextColor = random_color()
+                    actualColor = tuple(curVal/1.5 + nextColor[i]/2 for i, curVal in enumerate(newColor))
+
+                    a.plot(x, y, label = 'group ' + str(i), lw = 1.0, color = '#8B0000')
+                    y_max = max(y)
+                    if y_max > largestYMax:
+                        largestYMax = y_max
+                        a.set_ylim(0, 1.5 * largestYMax)
+                    # prevAxes = a1
+
+                    # graphTitle.set('Logistic PDF Fit to ' + str(gotten))
+
+                # a.boxplot(data, vert = True, showfliers = False)
 
                 graphTitle.set('Box Plots')
                 cancan.thisFigure.suptitle(' Reliability Plots for ' , fontsize=18, fontweight='bold', fontname="Calibri")
@@ -3944,6 +4097,8 @@ def plotAnova(data, anovaStats, summaryStats):
                 fig_dict[fig]['dictOfAxes'] = {}
                 fig_dict[fig]['loaded'] = False
                 fig_dict[fig]['table'] = None
+                msc, mse, fStat, fCritical, pValue, dfCol, dfErr, dfTot, _N, _C = anovaStats
+
                 for axes in [a]:
                     init_fig_dict(axes)
                     # fig_dict[fig]['dictOfAxes'][axes]['specsTable']['mn'] = globalMin
@@ -3952,7 +4107,6 @@ def plotAnova(data, anovaStats, summaryStats):
                     # fig_dict[fig]['dictOfAxes'][axes]['specsTable']['sigma'] = globalSigma
                     # fig_dict[fig]['dictOfAxes'][axes]['specsTable']['corr_coeff'] = corrCoeff
                     # fig_dict[fig]['dictOfAxes'][axes]['specsTable']['multiplier'] = globalMultiplier
-                    msc, mse, fStat, fCritical, pValue, dfCol, dfErr, dfTot, _N, _C = anovaStats
                     fig_dict[fig]['dictOfAxes'][axes]['specsTable']['msc'] = msc
                     fig_dict[fig]['dictOfAxes'][axes]['specsTable']['mse'] = mse
                     fig_dict[fig]['dictOfAxes'][axes]['specsTable']['fStat'] = fStat 
@@ -3976,7 +4130,7 @@ def plotAnova(data, anovaStats, summaryStats):
                 # plotButton.config(text = "New Plot Session", command = lambda: plotWeibull())#
 
     except ValueError, e:
-        tkMessageBox.showerror("Data NA Error", "Data at header " + str(gotten)
+        tkMessageBox.showerror("Data NA Error", "Data at header " + 'gotten'
             + " in file " + str(dataFile) + " is missing or invalid.\n\n" + " Error:" + str(e))
         cancan.draw()
         cancan.axpopup.entryconfig(1,state='disabled')
@@ -3990,7 +4144,7 @@ def plotAnova(data, anovaStats, summaryStats):
         return
     except TypeError, e:
         tkMessageBox.showerror("Parsing Error", "Data not valid at header " +
-            gotten + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
+            'gotten' + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
         cancan.draw()
         cancan.axpopup.entryconfig(1,state='disabled')
         cancan.addable_menu.entryconfig(0, state = 'disabled')
@@ -4003,7 +4157,7 @@ def plotAnova(data, anovaStats, summaryStats):
         return
     except KeyError, e:
         tkMessageBox.showerror("Parsing Error", "Data not valid at header " +
-            gotten + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
+            'gotten' + ". Check that you have selected the right data type.\n\n" + " Error:" + str(e))
         cancan.draw()
         cancan.axpopup.entryconfig(1,state='disabled')
         cancan.addable_menu.entryconfig(0, state = 'disabled')
@@ -4034,7 +4188,7 @@ def plotWeibull():
     global graphTitle
     global fig
     global notebookFrame
-    #('got here')
+    print('got here')
     distType = pdfTypeCombobox.get()
 
     # fig_dict[fig]['dictOfAxes'][axes]['refLines'] = []
@@ -4194,7 +4348,7 @@ def pre_plot_setup(typeString, oldTypeString):
 
     if typeString == 'RELA':
 
-        pdfTypeCombobox['values'] = ("Standard Weibull Distribution", "Normal Distribution", '2-Param Weibull Distribution',
+        pdfTypeCombobox['values'] = ('Best Fit Model', "Standard Weibull Distribution", "Normal Distribution", '2-Param Weibull Distribution',
                 '3-Param Weibull Distribution', 'Standard Exponential Distribution', "Lognormal Distribution", "Loglogistic Distribution", "Logistic Distribution")
         plotButton.config(text = "Plot", command = lambda: plotWeibull())#self.weibullPPF(canvas))#self.plotDecider(canvas))
 
@@ -4261,7 +4415,7 @@ def change_session(typeString):
         for widg in relaWidgs:
             widg.grid()
 
-        pdfTypeCombobox['values'] = ("Standard Weibull Distribution", "Normal Distribution", '2-Param Weibull Distribution',
+        pdfTypeCombobox['values'] = ('Best Fit Model', "Standard Weibull Distribution", "Normal Distribution", '2-Param Weibull Distribution',
             '3-Param Weibull Distribution', 'Standard Exponential Distribution', "Lognormal Distribution", "Loglogistic Distribution", "Logistic Distribution")
         plotButton.config(text = "New Plot Session", command = lambda: plotWeibull())#self.weibullPPF(canvas))#self.plotDecider(canvas))
         cancan.popup_multi.entryconfigure(0, label="Maximize")
@@ -4481,7 +4635,7 @@ def set_up_new_figure(typeString, oldTypeString):
     # if cursor != None:
     #     if cursor.vertOn and cursor.horizOn:
     #         prevCursorVisibility = True
-    # #(prevCursorVisibility)
+    # print(prevCursorVisibility)
 
     cursor = None
     cursors = []
@@ -4637,15 +4791,15 @@ def weibullPPF(distType):
 
         datesDF = pd.DataFrame(dateDiffList, columns = [gotten])
         stats = datesDF.describe()
-        #(datesDF[gotten].dtype)
+        print(datesDF[gotten].dtype)
 
         mu = stats.iloc[1][gotten]
         variance = stats.iloc[2][gotten] ** 2
         sigma = math.sqrt(variance)
         mn = stats.iloc[3][gotten]
         mx = stats.iloc[7][gotten]
-        # #(stats)
-        # #(mx)
+        # print(stats)
+        # print(mx)
         globalMax = mx
         globalMin = mn
         globalSigma = sigma
@@ -4653,7 +4807,7 @@ def weibullPPF(distType):
         x = dateDiffList
     else:
         stats = dframe[gotten].dropna().describe()
-        #(dframe[gotten].dtype)
+        print(dframe[gotten].dtype)
         mu = stats.iloc[1]
         variance = stats.iloc[2] ** 2
         sigma = math.sqrt(variance)
@@ -4668,7 +4822,7 @@ def weibullPPF(distType):
                 globalMultiplier *= 10.0
                 muCopy /= 10.0
                 logBase += 1
-        #(globalMultiplier)
+        print(globalMultiplier)
         globalMax = mx
         globalMin = mn
         globalSigma = sigma
@@ -4685,9 +4839,8 @@ def weibullPPF(distType):
     if logBase > 0:
         logScaling += 'e+' + str(logBase) 
 
-    globalSigVar.set(u"\u03c3 = " + str(truncate(sigma, 6)) + logScaling + "\n" + u"\u03bc = " + str(truncate(mu, 6))  + logScaling  +"\nmin = " + str(truncate(mn, 3))  + logScaling  +  "\nmax = " + str(truncate(mx, 3)) + logScaling )
-    props = dict(boxstyle='round', facecolor='lightblue', lw = .25)
-    statTableTxt = fig.text(x = .85, y=.75, s = globalSigVar.get(), bbox = props, fontsize = 9)
+    globalSigVar.set("s = " + str(truncate(sigma, 6)) + logScaling + "\n" + "x^ = " + str(truncate(mu, 6))  + logScaling  +"\nmin = " + str(truncate(mn, 3))  + logScaling  +  "\nmax = " + str(truncate(mx, 3)) + logScaling )
+
 
 
     # # fig_dict[fig]['dictOfAxes'][a3] = {}
@@ -4744,12 +4897,62 @@ def weibullPPF(distType):
 
 
     # if mn == 0:
-    #(mx)
+    print(mx)
     xSpan_univ = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
     xSpanDistribution = np.linspace(0.0001, mx, 300 + 5 * int(math.sqrt(mx - mn)))
 
     # nonzeros = min(sortedX[np.nonzero(sortedX)])
     corrCoeff = 0.0
+
+
+
+    if distType == 'Best Fit Model':
+        bestDist = ''
+        bestCorrCoeff = 0.0
+        for dist in  ("Standard Weibull Distribution", "Normal Distribution", '2-Param Weibull Distribution',
+            '3-Param Weibull Distribution', 'Standard Exponential Distribution', "Lognormal Distribution", "Loglogistic Distribution", "Logistic Distribution"):
+            if dist == "Standard Weibull Distribution":
+                yIs = [np.log(-1*np.log(1-mr)) for mr in medianRanks]
+                xIs = [np.log(t) for t in sortedX]
+                
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+            if dist == 'Normal Distribution':
+                
+                yIs = ss.norm.ppf(medianRanks, mu, sigma)
+                xIs = sortedX
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+            if dist == '2-Param Weibull Distribution':
+                yIs = [np.log(-1*np.log(1-mr)) for mr in medianRanks]
+                xIs = [np.log(t) for t in sortedX]
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+
+            if dist == '3-Param Weibull Distribution':    
+                p0, p1, p2 = ss.weibull_min.fit(sortedX)
+                shape, loc, scale = (p0, p1, p2)
+                xAxis_shiftedByLoc = [xi - p1 for xi in sortedX]
+                yIs = [np.log(-1*np.log(1-mr)) for mr in medianRanks]
+                xIs = [np.log(t) for t in xAxis_shiftedByLoc]
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+            if dist == 'Standard Exponential Distribution':          
+                yIs = [np.log(1-mr) for mr in medianRanks]
+                xIs = [t for t in sortedX]
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+            if dist == 'Lognormal Distribution':
+                shape, loc, scale = ss.lognorm.fit([i for i in sortedX if i > 0.0])
+                yIs = ss.lognorm.ppf(medianRanks, shape, loc, scale)# [np.log(1-mr) for mr in medianRanks]
+                xIs = [np.log(t) for t in sortedX]
+                corrCoeff = calc_corr_coeff(xIs, yIs)
+            if dist == 'Loglogistic Distribution':
+                i=0
+            if dist == 'Logistic Distribution':
+                i=0
+
+            if abs(bestCorrCoeff) <= abs(corrCoeff):
+                bestDist = str(dist)
+                bestCorrCoeff = corrCoeff
+        distType = bestDist
+
+    print(distType)
     shape = 0.0
     loc = 0.0
     scale = 1.0
@@ -4758,10 +4961,15 @@ def weibullPPF(distType):
     locSymbol = ''
     scaleSymbol = ''
 
+    empiricalCdfX = []
+    empiricalCdfY = []
+    
+
+
     if distType == 'Normal Distribution': # Can be one of "Weibull Distribution", "Normal Distribution", 'Lognormal Distribution', 'Loglogistic Distribution', 'Logistic Distribution'
         xSpan = np.linspace(mn, mx, 300 + 5 * int(math.sqrt(mx - mn)))
         xSpanDistribution = np.linspace(0.0001, 1.5*mx, 300 + 5 * int(math.sqrt(mx - mn)))
-        #(globalMu, globalSigma)
+        print(globalMu, globalSigma)
         scaleSymbol = u"\u03c3"
         locSymbol = u"\u03bc" 
 
@@ -4847,8 +5055,6 @@ def weibullPPF(distType):
         scaleSymbol = u'\u03b7'
         locSymbol = u'\u03b3'
 
-
-
         shape, loc, scale = ss.weibull_min.fit(sortedX, floc = 0, fscale = 1)
         #plot the result
         xSpan = np.linspace(0.0001, 1.5* mx, 300 + 5 * int(math.sqrt(mx - mn)))
@@ -4874,7 +5080,7 @@ def weibullPPF(distType):
         ax2.plot(sortedX, medianRanks, 'ob', 
             markersize = 2.3, 
             label = 'weibull probability plot scatter')
-        #(shape, loc, scale)
+        print(shape, loc, scale)
         ax2.plot(xSpan, ss.weibull_min.cdf(xSpan, shape, loc, scale), color = '#8B0000', lw = 1.0, label = 'weibull probability plot')
 
         ax2.set_ylabel("Unreliability F(t)")
@@ -4914,7 +5120,7 @@ def weibullPPF(distType):
         xIs = [np.log(t) for t in sortedX]
         
         corrCoeff = calc_corr_coeff(xIs, yIs)
-        #('succeeded plot')
+        print('succeeded plot')
     elif distType == 'Lognormal Distribution':
         
         shapeSymbol = u"\u03c3" + "T'"
@@ -4922,7 +5128,7 @@ def weibullPPF(distType):
         locSymbol = 'loc'
 
         shape, loc, scale = ss.lognorm.fit([i for i in sortedX if i > 0.0])
-        #(ax2)
+        print(ax2)
 
         #plot the result
         xSpan = np.linspace(.0001, 1.5* mx, 300 + 5 * int(math.sqrt(mx - mn)))
@@ -5082,7 +5288,7 @@ def weibullPPF(distType):
         p0, p1, p2 = ss.weibull_min.fit(sortedX)
         shape, loc, scale = (p0, p1, p2)
         # TODO add all labels to each graph
-        #(p0, p1, p2)
+        print(p0, p1, p2)
         mn = min(sortedX)
         mx = max(sortedX)
         xSpan = np.linspace(0.0001, 1.5*mx, 300 + 5 * int(math.sqrt(mx - mn)))
@@ -5255,7 +5461,8 @@ def weibullPPF(distType):
         ax4.set_ylim(0, max(ax4.get_ylim()))
         ax4.yaxis.set_label_position('right')
 
-
+    print('gotherereerere ')
+    print(corrCoeff)
     if (globalMultiplier > 1.0):
         ax1.set_xlabel(str(ax1.get_xlabel())+" (1e+%d)" % (logBase))
         ax2.set_xlabel(str(ax2.get_xlabel())+" (1e+%d)" % (logBase))
@@ -5263,6 +5470,20 @@ def weibullPPF(distType):
         ax4.set_xlabel(str(ax4.get_xlabel())+" (1e+%d)" % (logBase))
 
 
+    if str(corrCoeff) not in ['nan', 'inf', '-inf']:
+        corrCoeff = truncate(corrCoeff, 3)
+
+    globalSigVar.set(globalSigVar.get() + '\ncorr_coeff = ' + str(corrCoeff) +'\n' )
+    appendString = ''
+    for item in [(shapeSymbol, shape), (locSymbol, loc), (scaleSymbol, scale)]:
+        print('gothere item')
+        if len(item[0] ) > 0:
+            appendString += item[0] + ' = ' + str(truncate(item[1], 3)) + '\n'
+    globalSigVar.set(globalSigVar.get() + appendString)
+
+
+    props = dict(boxstyle='round', facecolor='lightblue', lw = .25)
+    statTableTxt = fig.text(x = .85, y=.75, s = globalSigVar.get(), bbox = props, fontsize = 9)
         # # report estimated correlation coefficient
         # covar = 0.0
         # xVarSum = 0.0
@@ -5284,9 +5505,16 @@ def weibullPPF(distType):
 
         # # 'CorrCoff ' + str(corrCoef)
         # # 'min is ' + str(mn)
-    #('yes 1')
+
+    splitTypeName = distType.split(' ')
+    truncatedName = ' '.join(splitTypeName[:-1])
+    graphTitle.set(truncatedName + ' Reliability Plots for ' + str(gotten))
+
+    cancan.thisFigure.suptitle(truncatedName + ' Reliability Plots for ' + str(gotten), fontsize=18, fontweight='bold', fontname="Calibri")
+    print('yes 1')
+
     slider_config_for_table_present_four_graphs()
-    #('yes 2')
+    print('yes 2')
     # TODO TODO TODO
     fig_dict[fig] = {}
     fig_dict[fig]['fig_next'] = None
@@ -5327,11 +5555,7 @@ def weibullPPF(distType):
     cancan.axpopup.entryconfig(1, state='normal')
 
 
-    splitTypeName = distType.split(' ')
-    truncatedName = ' '.join(splitTypeName[:-1])
-    graphTitle.set(truncatedName + ' Reliability Plots for ' + str(gotten))
 
-    cancan.thisFigure.suptitle(truncatedName + ' Reliability Plots for ' + str(gotten), fontsize=18, fontweight='bold', fontname="Calibri")
     cancan.draw()
 
 
@@ -5431,15 +5655,15 @@ def plot(canvas,graphType):
 
                 datesDF = pd.DataFrame(dateDiffList, columns = [gotten])
                 stats = datesDF.describe()
-                #(datesDF[gotten].dtype)
+                print(datesDF[gotten].dtype)
 
                 mu = stats.iloc[1][gotten]
                 variance = stats.iloc[2][gotten] ** 2
                 sigma = math.sqrt(variance)
                 mn = stats.iloc[3][gotten]
                 mx = stats.iloc[7][gotten]
-                # #(stats)
-                # #(mx)
+                # print(stats)
+                # print(mx)
                 globalMax = mx
                 globalMin = mn
                 globalSigma = sigma
@@ -5453,7 +5677,7 @@ def plot(canvas,graphType):
 
                 n, bins, patches = a.hist(dframe[gotten].dropna(), numBins,
                     facecolor = '#00A3E0', edgecolor = 'k', align = 'mid', label = 'histogram')
-                for patch in patches:
+                # for patch in patches:
                     # a.get_label()
 
                 x = np.linspace(mn, mx, 300 + 5 * int(math.sqrt(mx - mn)))
@@ -5463,7 +5687,7 @@ def plot(canvas,graphType):
                     p0, p1, p2=ss.weibull_min.fit(datesDF[gotten].dropna().tolist(), floc=0)
                     y = ss.weibull_min.pdf(x, p0, p1, p2)
                     a3.plot(x, y, label = 'weibull distribution', lw = 1.0, color = '#8B0000')
-                    #(a3.get_label())
+                    print(a3.get_label())
                     graphTitle.set('Weibull PDF Fit to ' + str(gotten))
 
                 elif graphType == 'Normal Distribution':
@@ -5476,24 +5700,24 @@ def plot(canvas,graphType):
 
                 elif graphType == 'Lognormal Distribution':
                     s, p1, p2 = ss.lognorm.fit([i for i in datesDF[gotten].dropna().tolist() if i > 0.0], floc = 0)
-                    #(s, p1, p2)
-                    #(globalSigma, globalMu)
+                    print(s, p1, p2)
+                    print(globalSigma, globalMu)
                     y = ss.lognorm.pdf(x, s, p1, p2)
-                    #('gothere')
+                    print('gothere')
                     a3.plot(x, y, color = '#8B0000', lw=1.0, label='lognormal distribution')
                     graphTitle.set('Lognormal PDF Fit to ' + str(gotten))
 
                 elif graphType == 'Loglogistic Distribution':
                     c, p1, p2 = ss.fisk.fit([i for i in datesDF[gotten].dropna().tolist() if i > 0.0], floc = 0)
-                    #(c,p1, p2)
-                    #(globalSigma, globalMu)
+                    print(c,p1, p2)
+                    print(globalSigma, globalMu)
                     y = ss.fisk.pdf(x, c, p1, globalMu)
                     a3.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic distribution')                       
                     graphTitle.set('Loglogistic PDF Fit to ' + str(gotten))
 
                 elif graphType == 'Logistic Distribution':
                     p0, p1 =ss.logistic.fit(datesDF[gotten].dropna().tolist(), floc=globalMu)
-                    #(p0, p1)
+                    print(p0, p1)
                     y = ss.logistic.pdf(x, p0, p1)
                     a3.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                     graphTitle.set('Logistic PDF Fit to ' + str(gotten))
@@ -5585,7 +5809,7 @@ def plot(canvas,graphType):
                 cursor = InformativeCursor(a2, useblit=True, color='red', linewidth=.5)
 
                 stats = dframe[gotten].dropna().describe()
-                #(dframe[gotten].dtype)
+                print(dframe[gotten].dtype)
                 mu = stats.iloc[1]
                 variance = stats.iloc[2] ** 2
                 sigma = math.sqrt(variance)
@@ -5600,7 +5824,7 @@ def plot(canvas,graphType):
                         globalMultiplier *= 10.0
                         muCopy /= 10.0
                         logBase += 1
-                #(globalMultiplier)
+                print(globalMultiplier)
 
                 
                 globalMax = mx / globalMultiplier
@@ -5620,9 +5844,9 @@ def plot(canvas,graphType):
                 xdata = (dframe[gotten].dropna()/globalMultiplier).tolist()
                 if graphType == 'Weibull Distribution':
                     xdata = (dframe[gotten].dropna()/globalMultiplier).tolist()
-                    # #(type(xdata))
+                    # print(type(xdata))
                     p0, p1, p2 = ss.weibull_min.fit(xdata, floc=0)
-                    #(p0, p1, p2)
+                    print(p0, p1, p2)
                     y = ss.weibull_min.pdf(x, p0, p1, p2)
                     a2.plot(x, y, label = 'weibull distribution', lw = 1.0, color = '#8B0000')
                     graphTitle.set('Weibull PDF Fit to ' + str(gotten))
@@ -5636,22 +5860,22 @@ def plot(canvas,graphType):
 
                 elif graphType == 'Lognormal Distribution':
                     s, p1, p2 = ss.lognorm.fit([i for i in xdata if i > 0.0], floc = 0)
-                    #(s, p1, p2)
-                    #(globalSigma, globalMu)
+                    print(s, p1, p2)
+                    print(globalSigma, globalMu)
                     y = ss.lognorm.pdf(x, s, p1, p2)
-                    #('gothere')
+                    print('gothere')
                     a2.plot(x, y, color = '#8B0000', lw=1.0, label='lognormal distribution')
                     graphTitle.set('Lognormal PDF Fit to ' + str(gotten))
                 elif graphType == 'Loglogistic Distribution':
                     c, p1, p2 = ss.fisk.fit([i for i in xdata if i > 0.0], floc = 0)
-                    #(c,p1, p2)
-                    #(globalSigma, globalMu)
+                    print(c,p1, p2)
+                    print(globalSigma, globalMu)
                     y = ss.fisk.pdf(x, c, p1, globalMu)
                     a2.plot(x, y, color = '#8B0000', lw=1.0, label='loglogistic distribution')
                     graphTitle.set('Loglogistic PDF Fit to ' + str(gotten))
                 elif graphType == 'Logistic Distribution':
                     p0, p1 =ss.logistic.fit(xdata, floc=globalMu)
-                    #(p0, p1)
+                    print(p0, p1)
                     y = ss.logistic.pdf(x, p0, p1)
                     a2.plot(x, y, label = 'logistic distribution', lw = 1.0, color = '#8B0000')
                     graphTitle.set('Logistic PDF Fit to ' + str(gotten))
@@ -5809,6 +6033,7 @@ def on_app_close():
     popupmsg('saveAndQuit')
 
 app = SeaofBTCapp()
+app.geometry("900x700")
 app.protocol("WM_DELETE_WINDOW", lambda: on_app_close())
 app.mainloop() # tkinter functionality
 

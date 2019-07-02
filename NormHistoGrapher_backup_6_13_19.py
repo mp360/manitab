@@ -2504,28 +2504,28 @@ def popupmsg(purpose):
             
             if stType.get():
                 if (leftDeviations.get() == u"-1\u03c3"):
-                    a = globalMu - globalSigma
+                    a = (globalMu - globalSigma) / globalMultiplier
                 elif (leftDeviations.get() == u"-2\u03c3"):
-                    a = globalMu - 2*globalSigma
+                    a = (globalMu - 2*globalSigma) / globalMultiplier
                 elif (leftDeviations.get() == u"\u03bc"):
-                    a = globalMu
+                    a = (globalMu) / globalMultiplier
                 elif (leftDeviations.get() == u"+1\u03c3"):
-                    a = globalMu + globalSigma
+                    a = (globalMu + globalSigma) / globalMultiplier
                 elif (leftDeviations.get() == u"+2\u03c3"):
-                    a = globalMu + 2*globalSigma
+                    a = (globalMu + 2*globalSigma) / globalMultiplier
                 if a > max(xAreaPoints): a = max(xAreaPoints)
                 if a < min(xAreaPoints): a = min(xAreaPoints)
 
                 if (rightDeviations.get() == u"+1\u03c3"):
-                    b = globalMu + globalSigma
+                    b = (globalMu + globalSigma) / globalMultiplier
                 elif (rightDeviations.get() == u"+2\u03c3"):
-                    b = globalMu + 2*globalSigma
+                    b = (globalMu + 2*globalSigma) /globalMultiplier
                 elif (rightDeviations.get() == u"\u03bc"):
-                    b = globalMu
+                    b = (globalMu)/ globalMultiplier
                 elif (rightDeviations.get() == u"-1\u03c3"):
-                    b = globalMu - globalSigma
+                    b = (globalMu - globalSigma) / globalMultiplier
                 elif (rightDeviations.get() == u"-2\u03c3"):
-                    b = globalMu - 2*globalSigma
+                    b = (globalMu - 2*globalSigma) / globalMultiplier
                 if b > max(xAreaPoints): b = max(xAreaPoints)
                 if b < min(xAreaPoints): b = min(xAreaPoints)
             elif numType.get():
@@ -2790,10 +2790,19 @@ def popupmsg(purpose):
             groupHeaders = listbox2.get(0, 'end')
             groupData = []
             popData = []
+            sumStats = {}
             for groupHeader in groupHeaders:
                 dframe = pd.read_csv(dataFile)
                 dframe = dframe.sort_values(groupHeader)
                 l = dframe[groupHeader].dropna().values.tolist()
+                stats = dframe[groupHeader].dropna().describe()
+                sumStats[str(groupHeader)] = {'mu':  stats.iloc[1],
+                    'variance': stats.iloc[2] ** 2,
+                    'sigma': stats.iloc[2],
+                    'mn': stats.iloc[3],
+                    'mx': stats.iloc[7]
+                }
+
                 groupData += [l]
                 popData += l
  
@@ -2849,7 +2858,7 @@ def popupmsg(purpose):
             print('Total')
             anovaStats = (msc, mse, fStat, fCritical, pValue, dfCol, dfErr, dfTot, minColLength, len(groupHeaders))
 
-            plotAnova(groupData, anovaStats, tuple())
+            plotAnova(groupData, anovaStats, tuple(), sumStats)
             # print groupData
                 
 
@@ -3681,7 +3690,7 @@ class PageThree(tk.Frame):
         # canContainer = tk.Frame(notebookFrame, width=200, height=200)
 
         notebookFrame = ttk.Notebook(self, style='bottomtab.TNotebook')
-
+        notebookFrame.grid_propagate(False)
 
         newContainer = TabFrame(master=notebookFrame, name ="Chart", width=200, height=200)
 
@@ -4082,7 +4091,7 @@ def toggleCrossHairs():
         cursor.horizOn = not cursor.horizOn
         cursor.vertOn = not cursor.vertOn
 
-def plotAnova(data, anovaStats, summaryStats):
+def plotAnova(data, anovaStats, tupleX, sumStats):
     global sessionType
     global graphTitle
     global fig
@@ -4102,8 +4111,14 @@ def plotAnova(data, anovaStats, summaryStats):
                 set_up_new_figure('ANOVA1', sessionType)
 
                 fig.subplots_adjust(wspace=.25, hspace=.35, left=0.12, right=0.78, top=0.88, bottom=0.12)
-                a = fig.add_subplot(211, label = 'boxplot')
-                a.boxplot(data, vert = True, showfliers = True)
+                
+                for i, x in enumerate(data):
+                    a = fig.add_subplot(211, label = 'group' + str(i))
+
+                    for xElem in x:
+                        y = y + [np.reciprocal(globalSigma * math.sqrt(2 * np.pi))
+                            * np.reciprocal(np.exp(0.5 * ((xElem - globalMu) / (globalSigma)) ** 2))]
+                    a.plot(x, y, label = 'normal distribution', lw = 1.0, color = '#8B0000')
 
                 graphTitle.set('Box Plots')
                 cancan.thisFigure.suptitle(' Reliability Plots for ' , fontsize=18, fontweight='bold', fontname="Calibri")
@@ -4882,9 +4897,19 @@ def weibullPPF(distType):
         globalMin = mn
         globalSigma = sigma
         globalMu = mu
+
+        mx /= globalMultiplier
+        mn /= globalMultiplier
+        sigma /= globalMultiplier
+        mu /= globalMultiplier
+
         x = dframe[gotten].dropna()
 
-    globalSigVar.set(u"\u03c3 = " + str(truncate(globalSigma, 6)) + "\n" + u"\u03bc = " + str(truncate(globalMu, 6)) +"\nmin = " + str(truncate(globalMin, 3)) +  "\nmax = " + str(truncate(globalMax, 3)) )
+    logScaling = ''
+    if logBase > 0:
+        logScaling += 'e+' + str(logBase) 
+
+    globalSigVar.set(u"\u03c3 = " + str(truncate(sigma, 6)) + logScaling + "\n" + u"\u03bc = " + str(truncate(mu, 6))  + logScaling  +"\nmin = " + str(truncate(mn, 3))  + logScaling  +  "\nmax = " + str(truncate(mx, 3)) + logScaling )
     props = dict(boxstyle='round', facecolor='lightblue', lw = .25)
     
     statTableTxt = fig.text(x = .85, y=.75, s = globalSigVar.get(), bbox = props, fontsize = 9)
@@ -4928,7 +4953,7 @@ def weibullPPF(distType):
     # x = (0,1,4,7,10,6,14,18,5,12,23,10,3,3,7,3,26,1,2,25,29,29,29,28,2,3,12,32,34,36,29,37,9,16,41,3,6,3,9,18,49,35,17,3,59,2,5,2,1,1,5,9,10,13,3,1,18,17,2,17,22,25,25,25,6,6,2,26,38,22,4,24,41,41,1,44,2,45,2,46,49,50,4,54,38,59)
     # x = (69,64,38,63,65,49,69,68,43,70,81,63,63,52,48,61,42,35,63,56,55,67,63,65,46,53,69,68,43,55,42,64,65,65,55,66,60,67,53,62,67,72,48,68,67,61,60,62,38,50,63,64,43,34,66,62,52,47,63,68,45,41,66,62,60,66,38,53,37,54,60,48,52,70,50,62,65,58,62,64,63,58,64,52,35,63,70,51,40,69,36,71,62,60,44,54,66,49,72,68,62,71,70,61,71,59,67,60,69,57,39,62,50,43,70,66,61,81,58,63,60,62,42,69,63,45,68,39,66,63,49,64,65,64,67,65,37)
     # x = (16, 17, 16, 18, 19, 17, 34, 53, 75, 93, 120)
-    sortedX = sorted(x)
+    sortedX = [xItem/globalMultiplier for xItem in sorted(x)]
 
 
     medianRanks = []
@@ -5449,6 +5474,11 @@ def weibullPPF(distType):
         ax4.set_ylim(0, max(ax4.get_ylim()))
         ax4.yaxis.set_label_position('right')
 
+    if (globalMultiplier > 1.0):
+        ax1.set_xlabel(str(ax1.get_xlabel())+" (1e+%d)" % (logBase))
+        ax2.set_xlabel(str(ax2.get_xlabel())+" (1e+%d)" % (logBase))
+        ax3.set_xlabel(str(ax3.get_xlabel())+" (1e+%d)" % (logBase))
+        ax4.set_xlabel(str(ax4.get_xlabel())+" (1e+%d)" % (logBase))
 
         # # report estimated correlation coefficient
         # covar = 0.0
@@ -5995,6 +6025,7 @@ def on_app_close():
 
 app = SeaofBTCapp()
 app.protocol("WM_DELETE_WINDOW", on_app_close)
+app.geometry("900x700")
 app.mainloop() # tkinter functionality
 
 
