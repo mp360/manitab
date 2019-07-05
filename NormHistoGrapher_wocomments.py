@@ -13,6 +13,7 @@ import scipy.stats as ss
 from matplotlib import dates
 import matplotlib.ticker as mticker
 import matplotlib
+import matplotlib.cm as cm
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
@@ -2719,15 +2720,40 @@ def popupmsg(purpose):
             alpha = float(alphaVar.get())
 
             groupHeaders = listbox2.get(0, 'end')
-            groupData = []
+            groupData = {}
             popData = []
             sumStats = {}
+            dframe = pd.read_csv(dataFile)
             for i, groupHeader in enumerate(groupHeaders):
-                dframe = pd.read_csv(dataFile)
                 dframe = dframe.sort_values(groupHeader)
-                l = dframe[groupHeader].dropna().values.tolist()
+                l = dframe[groupHeader].values.tolist()
+                groupData[groupHeader] = l
+                popData += l
+            print len(groupData)
+
+            df = pd.DataFrame(groupData)
+
+
+# apply(lambda x: fxy(x['A'], x['B']), axis=1)
+            indices = df.mean().sort_values().index
+            print indices
+            statsAllGroup = df.describe()
+            statsAllGroup = statsAllGroup.transpose()
+            statsAllGroup['normalized_mean'] = statsAllGroup.apply(lambda x: normalize(x['mean'], x['min'], x['max']), axis=1)
+            print statsAllGroup['normalized_mean']
+            print statsAllGroup
+            print statsAllGroup.index
+
+
+            df = df.reindex(statsAllGroup['normalized_mean'].sort_values().index, axis=1)
+            print df
+            groupHeaders = list(df.columns.values)
+            groupData = []
+            for i, groupHeader in enumerate(groupHeaders):
+                l = df[groupHeader].dropna().values.tolist()
                 groupData += [l]
-                stats = dframe[groupHeader].dropna().describe()
+                stats = df[groupHeader].dropna().describe()
+                print(stats.iloc[1])
                 sumStats[i] = {'mu':  stats.iloc[1],
                     'variance': stats.iloc[2] ** 2,
                     'sigma': stats.iloc[2],
@@ -2735,8 +2761,7 @@ def popupmsg(purpose):
                     'mx': stats.iloc[7],
                     'header': str(groupHeader)
                 }
-                popData += l
- 
+
             if not limitToN:
                 minColLength = len(popData)
                 for group in groupData:
@@ -3991,7 +4016,7 @@ def toggleCrossHairs():
         cursor.vertOn = not cursor.vertOn
 
 def random_color():
-    levels = np.linspace(.08, .8, 10)
+    levels = np.linspace(.08, .8, 300)
     toReturn =  tuple(np.random.choice(levels) for _ in range(3))
     print toReturn
     return toReturn
@@ -4043,7 +4068,15 @@ def plotAnova(data, anovaStats, sumStats):
 
                 largestYMax = 0.0
                 prevAxes = a
-                graphColors = []
+                graphColors = list(cm.rainbow(np.linspace(0, 1, len(data))))
+
+                for i in range(0, len(data), 2):
+                    graphColors[i] = np.array([colorVal/2 for colorVal in graphColors[i][:-1]] + [1])
+
+                print graphColors
+                colorDiff = 0.6
+                nextColor = '#4B0082'
+                alternateColor = '#8B0000'
                 for i, column in enumerate(data):
                     mu = sumStats[i]['mu']
                     mx = sumStats[i]['mx']
@@ -4055,17 +4088,47 @@ def plotAnova(data, anovaStats, sumStats):
 
                     mxNorm = (mx - mn)/thisRange
                     mnNorm = (mn - mn)/thisRange
-                    x = np.linspace(-1.5*(mxNorm), (mxNorm )*1.5, 300 + 5 * int(math.sqrt((mxNorm)*1.5 - (-1.5*(mxNorm )) )))
+                    muNorm = (mu - mn)/thisRange
+                    sigmaNorm = (sigma)/thisRange
+                    x = np.linspace(muNorm - 3*sigmaNorm, (mxNorm )*1.5, 300 + 5 * int(math.sqrt((mxNorm)*1.5 - (muNorm - 3*sigmaNorm) )))
                     p0, p1 = ss.logistic.fit([(val - mn)/(thisRange) for val in column], floc=(mu -mn)/thisRange)
                     print(x)
                     print(p0, p1)
                     y = ss.logistic.pdf(x, p0, p1)
                     # a1 = prevAxes.twinx().twiny()
-                    newColor = random_color()
-                    nextColor = random_color()
-                    actualColor = tuple(curVal/1.5 + nextColor[i]/2 for i, curVal in enumerate(newColor))
+                    
+                    # newColor = random_color()
+                    # validColor = False
+                    # while not validColor:
+                    #     nextColor = random_color()
+                    #     colorChecks = 0
+                    #     for color in graphColors:
+                    #         for k, curVal in enumerate(color):
+                    #             if abs(curVal - nextColor[k]) >= colorDiff:
+                    #                 colorChecks += 1
+                    #                 break
+                    #     if colorChecks == len(graphColors):
+                    #         print "colorchecks", colorChecks
+                    #         colorDiff -= colorDiff/((len(data))*2)
+                    #         colorDiff = abs(colorDiff)
+                    #         validColor = True
+                    #         graphColors += [nextColor]
+                    #     elif colorChecks == 0 and len(graphColors) == 0:
+                    #         validColor = True
+                    #         graphColors += [nextColor]
+                    #     elif colorChecks >= int(0.9*(len(graphColors))) :
+                    #         print "colorchecks", colorChecks
+                    #         colorDiff -= colorDiff/((len(data))*2)
+                    #         colorDiff = abs(colorDiff)
+                    #         validColor = True
+                    #         graphColors += [nextColor]
 
-                    a.plot(x, y, label = 'group ' + str(i), lw = 1.0, color = '#8B0000')
+                    a.plot(x, y, label = 'group ' + str(i), lw = 1.0, color = graphColors[i])
+                    graphColors += [nextColor]
+                    tempColor = nextColor
+                    nextColor = alternateColor
+                    alternateColor = tempColor
+
                     y_max = max(y)
                     if y_max > largestYMax:
                         largestYMax = y_max
@@ -4281,6 +4344,9 @@ def calc_corr_coeff(xIs, yIs):
         covar += (xi - avgX) * (yi - avgY)
     corrCoef = covar/(np.sqrt(xVarSum * yVarSum))
     return corrCoef
+
+def normalize(x, min, max):
+    return (x - min )/ (max - min)
 
 def excel_plottable_prob_plot(specs, xPoints, yPoints, plotType):
     yIs = []
